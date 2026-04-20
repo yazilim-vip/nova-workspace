@@ -1,0 +1,30 @@
+# Cloned repositories — preserve root folder only, contents fully local
+git-repositories/*
+!git-repositories/.gitkeep
+
+# Agent-generated scripts
+scripts/
+
+# Task management (per-developer state)
+tasks.md
+.tasks/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tool adapters (platform-specific, local only)
+.claude/
+.github/
+.kiro/
+.cursor/
+.windsurfrules
+
+# Workspace instance (dynamic, not shared — preserve structure, ignore contents)
+.ai/workspace/**
+!.ai/workspace/**/.gitkeep
