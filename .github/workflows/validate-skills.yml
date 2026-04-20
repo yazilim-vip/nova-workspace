@@ -1,0 +1,52 @@
+name: validate-skills
+
+on:
+  pull_request:
+    paths:
+      - '.ai/skills/**'
+      - '.github/workflows/validate-skills.yml'
+  push:
+    branches: [main]
+    paths:
+      - '.ai/skills/**'
+      - '.github/workflows/validate-skills.yml'
+  workflow_dispatch:
+
+jobs:
+  skills-ref:
+    name: agentskills.io spec
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install skills-ref
+        run: |
+          pip install "git+https://github.com/agentskills/agentskills.git#subdirectory=skills-ref"
+
+      - name: Validate all skills
+        run: |
+          set +e
+          failures=0
+          for dir in .ai/skills/*/; do
+            name=$(basename "$dir")
+            echo "::group::$name"
+            if skills-ref validate "$dir"; then
+              echo "ok"
+            else
+              failures=$((failures+1))
+              echo "::error title=Skill invalid::$name failed spec validation"
+            fi
+            echo "::endgroup::"
+          done
+          if [ $failures -gt 0 ]; then
+            echo "::error::$failures skill(s) failed validation"
+            exit 1
+          fi
+          echo "All skills passed."

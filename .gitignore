@@ -20,7 +20,7 @@ Thumbs.db
 
 # Tool adapters (platform-specific, local only)
 .claude/
-.github/
+.github/copilot-instructions.md
 .kiro/
 .cursor/
 .windsurfrules
