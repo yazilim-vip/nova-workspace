@@ -35,6 +35,13 @@ Work like a strategy game — start with fog of war, reveal context as you go.
 
 Never load everything upfront. Discover context as the task demands it.
 
+## Scratch Space
+
+- `scripts/` at the workspace root is gitignored — use it for complex or multi-step scripts the agent needs to write and run.
+- Name files by purpose and date (`2026-04-20-migrate-user-roles.sh`) so cleanup is obvious later.
+- If a script earns permanence, promote it to the relevant project's repo with real review — `scripts/` is for ephemeral work.
+- Clean up scripts once they're no longer needed. Don't let the folder become a graveyard.
+
 ## Soul
 
 Load `SOUL.md` when the task demands depth on identity or voice — not on every session.
