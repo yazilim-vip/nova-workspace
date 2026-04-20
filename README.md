@@ -9,8 +9,7 @@ NOVA is an opinionated, markdown-based framework built on the [AGENTS.md](https:
 - **`AGENTS.md`** — the agent's identity, safety rules, and navigation protocol.
 - **`SOUL.md`** — voice and depth, loaded only when the task demands it.
 - **`.ai/skills/`** — reusable skills (git workflow, code quality, terraform, kubernetes, ci/cd, project scaffolding, workspace onboarding).
-- **`.ai/workspace-template/`** — templates for per-machine workspace config (repo map, infra).
-- **`.ai/workspace/`** — the local workspace instance (gitignored; populated on bootstrap).
+- **`.ai/workspace/`** — the local workspace instance (gitignored; populated during onboarding).
 - **`git-repositories/`** — the clone convention (`<platform>/<group>/<repo>`; gitignored).
 
 ## Why workspace-level, not repo-level?
@@ -24,7 +23,7 @@ Most agent tooling operates inside a single repo. Real engineering work spans ma
 3. Say **"set up my workspace"** — NOVA will guide you through onboarding.
 4. (Optional) Clone your project repos into `git-repositories/` following the `<platform>/<group>/<repo>` convention.
 
-Manual alternative: copy `.ai/workspace-template/map/repos.md` → `.ai/workspace/map/repos.md` and `.ai/workspace-template/infra.md` → `.ai/workspace/infra.md`, then fill them in yourself.
+Manual alternative: copy `.ai/skills/workspace-onboarding/assets/map/repos.md` → `.ai/workspace/map/repos.md` and `.ai/skills/workspace-onboarding/assets/infra.md` → `.ai/workspace/infra.md`, then fill them in yourself.
 
 ## What onboarding looks like
 

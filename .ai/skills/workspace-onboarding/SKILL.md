@@ -65,8 +65,8 @@ Capture: primary tool for adapter commit decision.
 
 After collecting answers, generate:
 
-1. **`.ai/workspace/map/repos.md`** — populated from the repo answers, using the template in `.ai/workspace-template/map/repos.md`
-2. **`.ai/workspace/infra.md`** — populated from infra and rules answers, using the template in `.ai/workspace-template/infra.md`
+1. **`.ai/workspace/map/repos.md`** — populated from the repo answers, using the template at `.ai/skills/workspace-onboarding/assets/map/repos.md`
+2. **`.ai/workspace/infra.md`** — populated from infra and rules answers, using the template at `.ai/skills/workspace-onboarding/assets/infra.md`
 3. **Update `AGENTS.md` Identity section** — workspace name and purpose
 4. **Update `SOUL.md`** — adjust identity paragraph if workspace differs significantly from default
 

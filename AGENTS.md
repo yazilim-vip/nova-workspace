@@ -97,8 +97,8 @@ When entering a project for the first time or when asked to validate:
 
 First time on a new machine? Set up the local workspace instance:
 
-1. Copy `.ai/workspace-template/map/repos.md` → `.ai/workspace/map/repos.md` and fill in your repos
-2. Copy `.ai/workspace-template/infra.md` → `.ai/workspace/infra.md` and fill in workspace-specific tooling
+1. Copy `.ai/skills/workspace-onboarding/assets/map/repos.md` → `.ai/workspace/map/repos.md` and fill in your repos
+2. Copy `.ai/skills/workspace-onboarding/assets/infra.md` → `.ai/workspace/infra.md` and fill in workspace-specific tooling
 3. Clone repos into `git-repositories/` — path convention is in your `repos.md`
 
 ## Communication
