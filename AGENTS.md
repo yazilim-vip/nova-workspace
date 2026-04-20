@@ -42,6 +42,12 @@ Load `SOUL.md` when the task demands depth on identity or voice — not on every
 
 Load the relevant skill only when your task requires it. Each `SKILL.md` is the entry point.
 
+Skills live in two locations:
+- **`.ai/skills/<skill>/`** — upstream and team-shared skills (committed to the repo). Includes NOVA defaults plus any skills this team forked in.
+- **`.ai/workspace/skills/<skill>/`** — personal, local-only skills (gitignored). Scratch space for per-developer experiments or machine-specific helpers.
+
+When searching for a skill, check both locations. If the same skill name exists in both, the local (`.ai/workspace/skills/`) version wins.
+
 | Skill | Path | Load when |
 |-------|------|-----------|
 | workspace-onboarding | `.ai/skills/workspace-onboarding/SKILL.md` | First session, missing workspace files, "set up my workspace" |
