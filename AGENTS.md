@@ -1,4 +1,4 @@
-# YVIP Crew Workspace
+# NOVA Workspace
 
 ## Identity
 
@@ -43,23 +43,30 @@ Load `SOUL.md` when the task demands depth on identity or voice — not on every
 
 Load the relevant skill only when your task requires it. Each `SKILL.md` is the entry point.
 
-Skills live in two locations:
-- **`.ai/skills/<skill>/`** — upstream and team-shared skills (committed to the repo). Includes NOVA defaults plus any skills this team forked in.
-- **`.ai/workspace/skills/<skill>/`** — personal, local-only skills (gitignored). Scratch space for per-developer experiments or machine-specific helpers.
+### Framework-shipped skills
 
-When searching for a skill, check both locations. If the same skill name exists in both, the local (`.ai/workspace/skills/`) version wins.
+NOVA ships only the procedural skills the framework itself needs. **It does not ship opinions about how you write code, use git, run Kubernetes, or manage infrastructure — those are yours to bring.**
 
 | Skill | Path | Load when |
 |-------|------|-----------|
 | workspace-onboarding | `.ai/skills/workspace-onboarding/SKILL.md` | First session, missing workspace files, "set up my workspace" |
 | self-update | `.ai/skills/self-update/SKILL.md` | "sync with upstream", "pull NOVA updates", reviewing upstream changes before merge |
-| git-workflow | `.ai/skills/git-workflow/SKILL.md` | Branching, commits, MRs/PRs, releases |
-| code-quality | `.ai/skills/code-quality/SKILL.md` | Writing, refactoring, or reviewing code |
 | project-scaffold | `.ai/skills/project-scaffold/SKILL.md` | Creating or validating project structure |
-| terraform | `.ai/skills/terraform/SKILL.md` | Terraform/Terragrunt operations |
-| kubernetes | `.ai/skills/kubernetes/SKILL.md` | K8s manifests, deployments, secrets |
-| ci-cd | `.ai/skills/ci-cd/SKILL.md` | Pipelines, image builds, deployment flow |
-| infra (workspace) | `.ai/workspace/infra.md` | Workspace-specific infra tools and flows |
+
+### User-provided skills
+
+Bring your own. Two locations:
+
+- **`.ai/skills/<skill>/`** — committed to the repo. Use this for skills your whole team should have (fork model). Example: a mandatory CI protocol, an internal tool's config recipe, a review checklist.
+- **`.ai/workspace/skills/<skill>/`** — gitignored, machine-local. Per-developer experiments, personal helpers, anything you wouldn't ship to teammates.
+
+When searching, check both locations. On name collision, the local (`.ai/workspace/skills/`) version wins.
+
+### Workspace infra
+
+| Source | Path | Load when |
+|--------|------|-----------|
+| infra (workspace) | `.ai/workspace/infra.md` | Workspace-specific infra tools and flows (CLI wrappers, mandatory tooling) — populated during onboarding |
 
 ## Self-Learning
 
@@ -74,7 +81,8 @@ Every session should leave the system better than you found it.
 ### Where to persist
 | What | Where |
 |------|-------|
-| Universal behavioral rules | `.ai/skills/<skill>/SKILL.md` (committed) |
+| Team-shared behavioral rules | `.ai/skills/<skill>/SKILL.md` (committed to your repo or fork) |
+| Personal behavioral rules | `.ai/workspace/skills/<skill>/SKILL.md` (local only) |
 | Workspace-specific config | `.ai/workspace/infra.md` (local only) |
 | Repository map | `.ai/workspace/map/repos.md` (local only) |
 | Project-specific knowledge | That project's `AGENTS.md` or `.ai/` |

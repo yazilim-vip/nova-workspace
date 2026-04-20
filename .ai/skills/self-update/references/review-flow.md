@@ -52,8 +52,8 @@ For skipped commits, record them in `.ai/workspace/learnings/upstream-skipped.md
 
 | Commit | Summary | Skipped because |
 |--------|---------|-----------------|
-| `a1b2c3d` | feat(openclaw): add Slack channel preset | Fork doesn't use Slack; adopting the preset would add maintenance burden. Revisit if we add Slack. |
-| `e4f5g6h` | docs: shorten README onboarding section | Our fork has a longer, workspace-specific onboarding section. Keep our version. |
+| `a1b2c3d` | feat(skill): add slack-notify shared skill | Fork doesn't use Slack for agent notifications; adopting would add maintenance without benefit. Revisit if we migrate. |
+| `e4f5g6h` | docs: shorten README onboarding section | Our fork has a longer, team-specific onboarding section. Keep our version. |
 
 ## 2026-04-20 — sync against yazilim-vip/nova-workspace main
 
@@ -69,7 +69,7 @@ After merging:
 1. Check that `AGENTS.md` still loads without dangling references (skill paths, template paths).
 2. Verify every skill listed in the `AGENTS.md` skills table still has a `SKILL.md`.
 3. If onboarding templates changed, verify the user's `.ai/workspace/*` instance files don't need regeneration.
-4. Run any fork-specific sanity checks (e.g., for yazilim.vip: does `openclaw` skill still load?).
+4. Run any fork-specific sanity checks (e.g. do the team's custom skills still load and validate?).
 
 ## 6. Evolve the agent's own knowledge
 
