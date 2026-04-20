@@ -15,6 +15,8 @@ A fork of NOVA diverges on purpose. Team-specific skills, tightened safety rules
 
 Treat every upstream change as a **proposal**. Review it, decide whether it fits, apply or skip deliberately. Evolve the workspace — don't replace it.
 
+See [references/workflow.md](references/workflow.md) for the end-to-end flow diagram.
+
 ## When to Trigger
 
 - "sync", "pull", "update my workspace"
