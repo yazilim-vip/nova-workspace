@@ -17,10 +17,43 @@ Treat every upstream change as a **proposal**. Review it, decide whether it fits
 
 ## When to Trigger
 
-- "sync with upstream", "pull NOVA updates", "update my workspace"
-- "check for NOVA changes"
+- "sync", "pull", "update my workspace"
+- "sync with upstream", "pull NOVA updates", "check for NOVA changes"
 - User points at the upstream repo and asks what's new
 - After a long gap since the last sync
+
+## Two Kinds of Sync — Don't Conflate Them
+
+The word "sync" is ambiguous. Disambiguate before doing anything.
+
+### A. Sync with your own remote (origin catch-up)
+
+**When:** The user pushed to this repo's `origin` from another machine, or a teammate pushed, and this local clone is now behind. Those commits are ours — there's nothing to review.
+
+**Detection:** After `git fetch origin`, if `<branch>..origin/<branch>` has commits but `origin` is *this workspace's own canonical location* (not upstream NOVA), this is case A.
+
+**Action:** Confirm with the user, then `git pull --ff-only origin <branch>`. If fast-forward fails (local has diverging commits), stop and surface the divergence — don't force a merge.
+
+Review flow is **not** used here.
+
+### B. Sync with upstream NOVA (fork catch-up)
+
+**When:** This workspace is a fork, and we want to pull changes from the canonical `yazilim-vip/nova-workspace`. Those commits are *someone else's* — we need to review what applies to our fork and what doesn't.
+
+**Detection:** An `upstream` remote exists pointing at canonical NOVA, or `origin` points at canonical NOVA and the local repo has fork-like customizations. (See **Discover the Upstream** below.)
+
+**Action:** Full review flow — classify each commit, surface conflicts, apply deliberately.
+
+### Which did the user mean?
+
+If ambiguous, ask. Otherwise resolve by the state of the remotes:
+
+| Setup | Default interpretation |
+|-------|------------------------|
+| Only `origin`, origin = canonical NOVA | Case A (you're the maintainer or a vanilla user — simple pull) |
+| `origin` = fork, `upstream` = canonical NOVA; local behind `origin` | Case A |
+| `origin` = fork, `upstream` = canonical NOVA; local behind `upstream` | Case B |
+| Local behind both `origin` and `upstream` | Case A first, then offer Case B |
 
 ## Preflight
 
@@ -32,7 +65,9 @@ Before touching anything:
 
 ## Discover the Upstream
 
-This is the most important step. The "upstream" can be in different places depending on how this workspace was set up. **Never assume** — detect, then confirm with the user before fetching.
+Only relevant for **Case B** (fork catch-up from canonical NOVA). If you already resolved this as Case A, skip this section and go straight to `git pull --ff-only`.
+
+This is the most important step for Case B. The "upstream" can be in different places depending on how this workspace was set up. **Never assume** — detect, then confirm with the user before fetching.
 
 ### Known NOVA URLs
 
