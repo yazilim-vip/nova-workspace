@@ -51,6 +51,7 @@ When searching for a skill, check both locations. If the same skill name exists 
 | Skill | Path | Load when |
 |-------|------|-----------|
 | workspace-onboarding | `.ai/skills/workspace-onboarding/SKILL.md` | First session, missing workspace files, "set up my workspace" |
+| self-update | `.ai/skills/self-update/SKILL.md` | "sync with upstream", "pull NOVA updates", reviewing upstream changes before merge |
 | git-workflow | `.ai/skills/git-workflow/SKILL.md` | Branching, commits, MRs/PRs, releases |
 | code-quality | `.ai/skills/code-quality/SKILL.md` | Writing, refactoring, or reviewing code |
 | project-scaffold | `.ai/skills/project-scaffold/SKILL.md` | Creating or validating project structure |
