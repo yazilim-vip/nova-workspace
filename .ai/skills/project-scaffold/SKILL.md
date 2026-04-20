@@ -70,6 +70,32 @@ Each AI tool has its own entrypoint filename. Adapters are thin files (1-2 lines
 
 Use [assets/AGENTS.md](assets/AGENTS.md) as the starting point for a new project's root `AGENTS.md`.
 
+### Minimal AGENTS.md inline
+
+If you just need the smallest possible valid `AGENTS.md`, this is it:
+
+```markdown
+# <project name>
+
+## Identity
+
+<one-paragraph description of what the project is and its tech stack>
+
+## Build & Run
+
+\`\`\`bash
+<build command>
+<test command>
+<run command>
+\`\`\`
+
+## Project Rules
+
+<anything that would surprise a new contributor — constraints, conventions, gotchas>
+```
+
+Grow from there as the project earns complexity.
+
 ## Convention Adoption Protocol
 
 When entering a project for the first time or when asked to validate:

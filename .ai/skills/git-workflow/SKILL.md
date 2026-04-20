@@ -24,7 +24,32 @@ metadata:
 - Types: `feat`, `fix`, `refactor`, `chore`, `docs`, `test`, `ci`, `style`, `perf`
 - First line under 72 characters
 - Body explains *why*, not *what*
-- Always include `Co-Authored-By` trailer for AI-assisted commits
+- Include a `Co-Authored-By` trailer for AI-assisted commits if your workspace's convention calls for it (check workspace-level rules)
+
+### Example — good vs bad
+
+**Bad:**
+
+```
+updated auth stuff
+
+fixed the bug
+```
+
+**Good:**
+
+```
+fix(auth): reject expired JWTs at middleware layer
+
+Tokens past `exp` were reaching handlers because the middleware only
+checked signature validity. Add explicit `exp` comparison before the
+signature check so invalid timestamps short-circuit faster and produce
+a clearer 401 response.
+
+Refs: INCIDENT-412
+```
+
+Why it's better: scope makes the area clear (`auth`), the subject names the fix not the symptom, the body explains *why* the previous code was wrong, and the trailer links to context outside git.
 
 ## Merge Requests / Pull Requests
 
@@ -33,6 +58,13 @@ metadata:
 - Include description: what, why, how to test
 - CI must pass before merging
 - Squash-merge feature branches to keep history clean
+
+## Merge Conflicts
+
+- Resolve by understanding both sides, not by picking one reflexively
+- If a conflict is in a file you didn't touch, read the other side's commits (`git log --oneline <their-branch>` over the file) before resolving — their change may invalidate your assumptions
+- After resolving: re-run tests. Conflict resolution often breaks things that neither side's tests caught alone
+- Never resolve a conflict with `-X theirs` / `-X ours` globally — it suppresses the signal
 
 ## Multi-Repo Operations
 

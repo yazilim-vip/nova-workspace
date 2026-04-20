@@ -1,7 +1,6 @@
 ---
 name: openclaw
 description: Configure and deploy OpenClaw AI gateway. Use when setting up OpenClaw channels (Discord, Slack, Telegram), model providers (Ollama, Anthropic, OpenAI), writing openclaw.json gateway configuration, deploying to Kubernetes, or writing agent instructions.
-license: MIT
 metadata:
   author: yazilim-vip
   version: "0.1.0"
@@ -12,17 +11,7 @@ metadata:
 
 > **Status: Unstable** — Gateway startup issues resolved via Docker Compose testing (OOM, config validation). K8s manifests updated but not yet verified on a real cluster. Key requirement: the gateway needs `NODE_OPTIONS=--max-old-space-size=4096` (4GB V8 heap) because it transpiles 100+ TypeScript extensions via jiti at startup. Expect 2–4 minute cold start.
 
-Configure and deploy [OpenClaw](https://docs.openclaw.ai) — an AI assistant platform that connects language models to 23+ chat channels through a unified gateway.
-
-## When to use this skill
-
-- Setting up OpenClaw from scratch
-- Configuring channels (Discord, Slack, Telegram, etc.)
-- Adding or switching model providers (Ollama, Anthropic, OpenAI, Google)
-- Writing `openclaw.json` gateway configuration
-- Deploying to Kubernetes
-- Writing agent instructions (`AGENTS.md`)
-- Troubleshooting channel connectivity or auth issues
+Configure and deploy [OpenClaw](https://docs.openclaw.ai) — an AI assistant platform that connects language models to 23+ chat channels through a unified gateway. Triggers are in the frontmatter description above.
 
 ## References
 

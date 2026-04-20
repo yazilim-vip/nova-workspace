@@ -11,6 +11,8 @@ metadata:
 
 Guide the user through setting up their local workspace instance via conversation. At the end, generate the workspace instance files from their answers.
 
+See [assets/example-dialogue.md](assets/example-dialogue.md) for a full example conversation — shape reference only, not a script.
+
 ## When to Trigger
 
 - `.ai/workspace/map/repos.md` does not exist

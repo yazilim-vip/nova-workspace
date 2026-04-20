@@ -53,9 +53,26 @@ When a feature spans frontend and backend:
 - Missing comments on self-evident code
 - Hypothetical future problems
 
+### Example — signal vs noise review comments
+
+**Noise** (skip these):
+
+> "I would have named this `getUserById` instead of `findUser`."
+>
+> "Consider adding a comment here explaining what the function does."
+>
+> "This could be extracted to a helper in case we need it elsewhere someday."
+
+**Signal** (flag these):
+
+> "`user.role` is read before the nullability check on line 42 — this NPEs whenever the token has no `sub` claim."
+>
+> "The `order_items` query doesn't use a prepared statement and `user_input` flows into it directly — SQL injection."
+>
+> "Changing `listUsers()` to return `Page<User>` is a breaking API change for anyone consuming the REST endpoint. Either keep the legacy shape or bump the API version."
+
 ## Testing
 
 - Integration tests over mocks where feasible
 - E2E tests for critical user paths
 - Never skip tests to ship faster
-- Never modify source code during repo imports (e.g. monorepo migration) — zero diff against original; changes go in separate commits
