@@ -4,22 +4,28 @@ A minimal, opinionless framework for running AI agents across multi-repo develop
 
 NOVA is a markdown-based framework built on the [AGENTS.md](https://agents.md) convention. It gives an AI agent a consistent identity, safety rules, and navigation protocol across a multi-repo workspace — so the agent behaves the same way whether you're in Claude Code, Cursor, Codex, or any other AGENTS.md-compatible tool.
 
-**NOVA does not ship opinions about how you write code, use git, run Kubernetes, or manage infrastructure.** Those belong to you. The framework ships only the machinery it needs to work — onboarding, upstream syncing, project-structure conventions — and gives you two clean places to bring your own skills.
+**NOVA does not ship opinions and does not ship skills.** Opinions about how you write code, use git, run Kubernetes, or manage infrastructure belong to you. The framework ships only its own machinery: how to onboard a new workspace, how to pull upstream changes deliberately, and a convention for how individual projects organize their agent-facing content.
 
 ## What you get
 
 - **`AGENTS.md`** — the agent's identity, safety rules, and navigation protocol.
 - **`SOUL.md`** — voice and depth, loaded only when the task demands it.
-- **`.ai/skills/`** — two framework-shipped procedural skills (`workspace-onboarding`, `self-update`) plus whatever team-shared skills you commit here.
-- **`.ai/project-structure.md`** — the NOVA convention for how a single project organizes its agent-facing content. A reference doc, not a skill.
-- **`.ai/workspace/`** — the local workspace instance (gitignored; populated during onboarding). Personal local-only skills live at `.ai/workspace/skills/`.
+- **`.ai/onboarding/`** — framework procedure: guided workspace setup.
+- **`.ai/self-update/`** — framework procedure: deliberate upstream sync.
+- **`.ai/project-structure.md`** — NOVA's convention for a single project's AGENTS.md / `.ai/` layout. A reference doc.
+- **`.ai/workspace/`** — the local workspace instance (gitignored; populated during onboarding). **Your skills live here** at `.ai/workspace/skills/<name>/SKILL.md`, in the [agentskills.io](https://agentskills.io) format.
 - **`git-repositories/`** — the clone convention (`<platform>/<group>/<repo>`; gitignored).
 
-**Mental model:** `.ai/skills/` = things the agent *does* on trigger. Flat docs under `.ai/` = things the agent *reads* when context demands. Don't mix the two.
+**Mental model:**
+- `.ai/<name>/` = NOVA's own procedures (read on trigger).
+- `.ai/*.md` = NOVA's conventions (read when context demands).
+- `.ai/workspace/` = yours (local, gitignored). Skills, infra config, learnings — all yours.
+
+NOVA never writes into `.ai/workspace/` upstream and never ships a committed skills folder. Your skills stay local by default.
 
 ## Why workspace-level, not repo-level?
 
-Most agent tooling operates inside a single repo. Real engineering work spans many repos — apps, infra, shared libraries, docs. NOVA sits one level above: it's the thing that tells the agent *which* repo to enter, what conventions it uses, and where the shared skills live.
+Most agent tooling operates inside a single repo. Real engineering work spans many repos — apps, infra, shared libraries, docs. NOVA sits one level above: it's the thing that tells the agent *which* repo to enter, what conventions it uses, and where your tooling lives.
 
 ## Getting started
 
@@ -28,31 +34,27 @@ Most agent tooling operates inside a single repo. Real engineering work spans ma
 3. Say **"set up my workspace"** — NOVA will guide you through onboarding.
 4. (Optional) Clone your project repos into `git-repositories/` following the `<platform>/<group>/<repo>` convention.
 
-Manual alternative: copy `.ai/skills/workspace-onboarding/assets/map/repos.md` → `.ai/workspace/map/repos.md` and `.ai/skills/workspace-onboarding/assets/infra.md` → `.ai/workspace/infra.md`, then fill them in yourself.
+Manual alternative: copy `.ai/onboarding/assets/map/repos.md` → `.ai/workspace/map/repos.md` and `.ai/onboarding/assets/infra.md` → `.ai/workspace/infra.md`, then fill them in yourself.
 
 ## What onboarding looks like
 
 NOVA uses a guided conversation — it asks 2-3 questions at a time, adapts to your answers, and generates the workspace instance files at the end.
 
-See a full example conversation in [.ai/skills/workspace-onboarding/assets/example-dialogue.md](.ai/skills/workspace-onboarding/assets/example-dialogue.md) — identity → repos → infra → rules → AI tool → generated-files preview, plus short variants for skipping a topic, adding a repo later, and the first post-onboarding task.
+See a full example conversation in [.ai/onboarding/assets/example-dialogue.md](.ai/onboarding/assets/example-dialogue.md) — identity → repos → infra → rules → AI tool → generated-files preview, plus short variants for skipping a topic, adding a repo later, and the first post-onboarding task.
 
 ## Bringing your own skills
 
-Two locations, same [agentskills.io](https://agentskills.io) format — pick based on who should have the skill.
+Author them in the [agentskills.io](https://agentskills.io) format and drop them at `.ai/workspace/skills/<name>/SKILL.md`. That path is gitignored — machine-local, per-developer.
 
-**Team-shared → `.ai/skills/<your-skill>/` (committed to your repo or fork).** Anything the whole team should have: a mandatory deployment flow, an internal tool's config recipe, a review checklist, team-wide git/code/terraform conventions. If you're forking upstream NOVA, pull updates with:
+**Sharing skills across a team is a fork-level decision, not a framework one.** Common patterns teams use:
 
-```bash
-git remote add upstream https://github.com/yazilim-vip/nova-workspace.git
-git fetch upstream
-git merge upstream/main
-```
+- Fork NOVA and override `.gitignore` in your fork to commit `.ai/workspace/skills/`.
+- Keep team skills in a separate repo and symlink or copy them in.
+- Use any other sharing convention that fits your team.
 
-(Or use the `self-update` skill — it reviews incoming upstream changes instead of merging blindly.)
+NOVA stays out of that choice — it doesn't ship a prescribed "team skills" slot because prescribing one would push teams into a pattern that doesn't suit them.
 
-**Personal, local-only → `.ai/workspace/skills/<your-skill>/` (gitignored).** One-off helpers, experiments, machine-specific shortcuts. Nothing shared, nothing committed. On name collision, the local version wins.
-
-Every skill has a `SKILL.md` with agentskills.io-compliant YAML frontmatter:
+Example skill frontmatter:
 
 ```markdown
 ---
@@ -64,15 +66,23 @@ metadata:
 ---
 ```
 
-See `.ai/skills/workspace-onboarding/SKILL.md` for a full reference example.
+## Staying current with upstream
+
+If you've forked NOVA, sync deliberately — don't blind-merge:
+
+```bash
+git remote add upstream https://github.com/yazilim-vip/nova-workspace.git
+```
+
+Then ask your agent to "sync with upstream". It'll follow the flow in [.ai/self-update/README.md](.ai/self-update/README.md): fetch, classify each change, surface conflicts, apply or skip with reasons recorded.
 
 ## Contributing upstream
 
-If you've built something generic enough that other teams would benefit — a new skill, a fix, a better onboarding question — open a PR. Keep it focused and opinionated: "this is how we do it, here's why" beats "adds optional support for X." By contributing, you agree to the MIT License.
+If you've built framework-level improvement — a better onboarding question, a fix to the self-update flow, a clearer convention — open a PR. Keep it focused: framework changes, not opinions. By contributing, you agree to the MIT License.
 
 ## Status
 
-Early. Opinionated. Shipped as *how we actually work*, not as a polished product. Take what's useful, fork it, adapt it.
+Early. Minimal on purpose. Shipped as *how our crew runs its agent workflow*, not as a polished product. Take what's useful, fork it, adapt it.
 
 ## License
 

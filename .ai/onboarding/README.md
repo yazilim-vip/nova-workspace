@@ -1,13 +1,6 @@
----
-name: workspace-onboarding
-description: First-time workspace setup through a guided conversation. Use when a user is new to this workspace, workspace instance files are missing, or the user asks to set up or reconfigure their workspace.
-metadata:
-  author: yazilim-vip
-  version: "0.1.0"
-  status: "stable"
----
-
 # Workspace Onboarding
+
+Framework procedure — read when a user joins a fresh workspace or asks to set things up. Not a skill; it's machinery the framework uses to get itself configured.
 
 Guide the user through setting up their local workspace instance via conversation. At the end, generate the workspace instance files from their answers.
 
@@ -67,8 +60,8 @@ Capture: primary tool for adapter commit decision.
 
 After collecting answers, generate:
 
-1. **`.ai/workspace/map/repos.md`** — populated from the repo answers, using the template at `.ai/skills/workspace-onboarding/assets/map/repos.md`
-2. **`.ai/workspace/infra.md`** — populated from infra and rules answers, using the template at `.ai/skills/workspace-onboarding/assets/infra.md`
+1. **`.ai/workspace/map/repos.md`** — populated from the repo answers, using the template at `.ai/onboarding/assets/map/repos.md`
+2. **`.ai/workspace/infra.md`** — populated from infra and rules answers, using the template at `.ai/onboarding/assets/infra.md`
 3. **Update `AGENTS.md` Identity section** — workspace name and purpose
 4. **Update `SOUL.md`** — adjust identity paragraph if workspace differs significantly from default
 

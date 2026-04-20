@@ -1,13 +1,6 @@
----
-name: self-update
-description: Review and selectively integrate upstream NOVA changes into this workspace. Use when the user asks to sync with upstream, pull NOVA updates, update my workspace, or similar. Never run a blind git merge — upstream changes are proposals, not commands.
-metadata:
-  author: yazilim-vip
-  version: "0.1.0"
-  status: "stable"
----
-
 # Self-Update
+
+Framework procedure — read when the user asks to sync with upstream, pull NOVA updates, update the workspace, or review upstream changes. Not a skill; it's how the framework updates itself. Never run a blind `git merge` — upstream changes are proposals, not commands.
 
 ## Principle
 

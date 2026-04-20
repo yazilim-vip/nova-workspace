@@ -20,13 +20,12 @@ Walk each commit (or squash logical groups) and classify:
 
 | Class | What it is | Default action |
 |-------|-----------|----------------|
-| **New skill** | New `.ai/skills/<name>/` directory | Offer — user decides if it fits their workflow |
-| **Skill update (compatible)** | Change to a skill the fork hasn't customized | Apply |
-| **Skill update (conflicting)** | Change to a skill the fork has modified | Discuss — surface both versions, recommend a merge strategy |
+| **Framework procedure change** | Change to `.ai/onboarding/` or `.ai/self-update/` | Usually apply — core machinery. If the fork customized the procedure, surface the diff. |
+| **Convention doc change** | Change to flat `.ai/*.md` (e.g. `.ai/project-structure.md`) | Apply unless the fork has diverged |
+| **Onboarding template change** | `.ai/onboarding/assets/*` | Apply unless the fork has diverged |
 | **AGENTS.md / SOUL.md change** | Edit to root-level instruction files | Always discuss — these are identity files, forks often customize heavily |
-| **Template change** | `.ai/skills/workspace-onboarding/assets/*` | Apply unless the fork has diverged |
-| **Docs / README** | README.md, CONTRIBUTING notes | Apply unless fork-specific wording exists |
-| **Breaking / structural** | Path renames, removed skills, schema changes | Discuss — may require fork migration |
+| **Docs / README** | README.md, top-level docs | Apply unless fork-specific wording exists |
+| **Breaking / structural** | Path renames, removed procedures, schema changes | Discuss — may require fork migration |
 | **Deprecation** | Marked-deprecated content | Note in learnings; schedule removal, don't apply blindly |
 
 ## 3. Present the plan

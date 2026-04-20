@@ -8,7 +8,7 @@ This is a framework convention, not a skill — the agent reads it when creating
 
 A **project** is one repo, one logical code unit. It has its own `AGENTS.md`, optionally an `.ai/` directory, and optionally subfolder `AGENTS.md` files for submodules with distinct rules.
 
-Cross-project concerns — skills, safety rules, repo maps, infra conventions — belong to the **workspace**, not the project. If you need to coordinate across multiple repos, that's a workspace (see `.ai/skills/workspace-onboarding/`), not a "multi-repo project." No nested workspaces.
+Cross-project concerns — skills, safety rules, repo maps, infra conventions — belong to the **workspace**, not the project. If you need to coordinate across multiple repos, that's a workspace (see `.ai/onboarding/`), not a "multi-repo project." No nested workspaces.
 
 ## AGENTS.md Hierarchy
 
