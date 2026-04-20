@@ -59,9 +59,9 @@ flowchart TD
     BEvolve --> Done
     UpToDate --> Done
 
-    classDef stop fill:#fee,stroke:#c33
-    classDef done fill:#efe,stroke:#3a3
-    classDef ask fill:#ffe,stroke:#aa3
+    classDef stop fill:#c62828,stroke:#8e0000,color:#ffffff
+    classDef done fill:#2e7d32,stroke:#1b5e20,color:#ffffff
+    classDef ask fill:#f9a825,stroke:#b28704,color:#000000
     class StopNotGit,StopDirty,AStop,ADivergence stop
     class ADone,Done,UpToDate done
     class AskBranch,AskUser,OfferAdd,AConfirm,BConfirm,CheckUpstream ask
