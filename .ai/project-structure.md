@@ -1,19 +1,14 @@
----
-name: project-scaffold
-description: Scaffold and validate a single project's structure — AGENTS.md hierarchy, .ai/ directory, tool adapters. Use when creating a new project, validating an existing one, or migrating legacy structures.
-metadata:
-  author: yazilim-vip
-  version: "0.2.0"
-  status: "stable"
----
+# Project Structure
 
-# Project Scaffold
+The NOVA convention for how a single project organizes its agent-facing content.
+
+This is a framework convention, not a skill — the agent reads it when creating or validating a project, not on every session. Humans read it when they need to know the rules.
 
 ## Scope
 
 A **project** is one repo, one logical code unit. It has its own `AGENTS.md`, optionally an `.ai/` directory, and optionally subfolder `AGENTS.md` files for submodules with distinct rules.
 
-Cross-project concerns — skills, safety rules, repo maps, infra conventions — belong to the **workspace**, not the project. If you need to coordinate across multiple repos, that's a workspace (see `workspace-onboarding`), not a "multi-repo project." No nested workspaces.
+Cross-project concerns — skills, safety rules, repo maps, infra conventions — belong to the **workspace**, not the project. If you need to coordinate across multiple repos, that's a workspace (see `.ai/skills/workspace-onboarding/`), not a "multi-repo project." No nested workspaces.
 
 ## AGENTS.md Hierarchy
 
@@ -66,13 +61,84 @@ Each AI tool has its own entrypoint filename. Adapters are thin files (1-2 lines
 
 **Rule:** Commit only the adapter for your team's primary tool. All others are local. Never put agent instructions inside adapter files — only the redirect line belongs there.
 
+## Convention Adoption Protocol
+
+When entering a project for the first time or when asked to validate:
+
+1. Check if the project has an `AGENTS.md`
+2. Validate it aligns with project conventions (this doc) and workspace conventions (the parent workspace)
+3. If missing or non-compliant, offer to scaffold from the template below
+4. If the project has a `.skills/` directory, migrate it to `.ai/skills/`
+
+## What Belongs in a Project AGENTS.md
+
+- **Identity** — what the project is, tech stack
+- **Module Map** — what's inside (for projects with multiple modules/submodules)
+- **Build & Run** — how to build, test, run locally
+- **Key Paths** — important files and directories
+- **Project Rules** — rules specific to this project (not workspace rules)
+- **Dependencies** — related repos, external services
+
+## What Does NOT Belong
+
+- Workspace-level concerns (skills index, cross-project safety rules, repo map)
+- References to sibling projects (each project must be self-contained)
+- Ephemeral task details
+- Secrets or credentials
+- Information derivable from the code itself
+
 ## Template
 
-Use [assets/AGENTS.md](assets/AGENTS.md) as the starting point for a new project's root `AGENTS.md`.
+Starter `AGENTS.md` for a new project. Fill in the `{{placeholders}}`; delete sections you don't need.
 
-### Minimal AGENTS.md inline
+```markdown
+# {{Project Name}}
 
-If you just need the smallest possible valid `AGENTS.md`, this is it:
+## Identity
+
+{{Brief description of the project and its purpose.}}
+
+**Tech Stack:** {{e.g. Kotlin + Spring Boot, React + Vite}}
+
+## Module Map
+
+| Module | Path | Purpose |
+|--------|------|---------|
+| {{name}} | {{path}} | {{what it does}} |
+
+## Build & Run
+
+\`\`\`bash
+# Build
+{{build command}}
+
+# Test
+{{test command}}
+
+# Run
+{{run command}}
+\`\`\`
+
+## Key Paths
+
+| Path | Purpose |
+|------|---------|
+| {{path}} | {{what it is}} |
+
+## Project Rules
+
+{{Project-specific rules on top of workspace conventions. Delete this section if none.}}
+
+## Dependencies
+
+| Dependency | Relationship |
+|-----------|-------------|
+| {{repo or service}} | {{how this project depends on it}} |
+```
+
+### Absolute minimum
+
+If you want the smallest valid `AGENTS.md`:
 
 ```markdown
 # <project name>
@@ -95,29 +161,3 @@ If you just need the smallest possible valid `AGENTS.md`, this is it:
 ```
 
 Grow from there as the project earns complexity.
-
-## Convention Adoption Protocol
-
-When entering a project for the first time or when asked to validate:
-
-1. Check if the project has an `AGENTS.md`
-2. Validate it aligns with project conventions (this skill) and workspace conventions (the parent workspace)
-3. If missing or non-compliant, offer to scaffold from `assets/AGENTS.md`
-4. If the project has a `.skills/` directory, migrate it to `.ai/skills/`
-
-## What Belongs in a Project AGENTS.md
-
-- **Identity**: What the project is, tech stack
-- **Module Map**: What's inside (for projects with multiple modules/submodules)
-- **Build & Run**: How to build, test, run locally
-- **Key Paths**: Important files and directories
-- **Project Rules**: Rules specific to this project — not workspace rules
-- **Dependencies**: Related repos, external services
-
-## What Does NOT Belong
-
-- Workspace-level concerns (skills index, cross-project safety rules, repo map)
-- References to sibling projects (each project must be self-contained)
-- Ephemeral task details
-- Secrets or credentials
-- Information derivable from the code itself

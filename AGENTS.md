@@ -51,7 +51,6 @@ NOVA ships only the procedural skills the framework itself needs. **It does not 
 |-------|------|-----------|
 | workspace-onboarding | `.ai/skills/workspace-onboarding/SKILL.md` | First session, missing workspace files, "set up my workspace" |
 | self-update | `.ai/skills/self-update/SKILL.md` | "sync with upstream", "pull NOVA updates", reviewing upstream changes before merge |
-| project-scaffold | `.ai/skills/project-scaffold/SKILL.md` | Creating or validating project structure |
 
 ### User-provided skills
 
@@ -98,8 +97,8 @@ Every session should leave the system better than you found it.
 
 When entering a project for the first time or when asked to validate:
 1. Check if the project has an `AGENTS.md`
-2. Validate it aligns with workspace conventions
-3. If missing or non-compliant, offer to scaffold using `.ai/skills/project-scaffold/`
+2. Validate it against the project-structure convention ([.ai/project-structure.md](.ai/project-structure.md))
+3. If missing or non-compliant, offer to scaffold using the template in that doc
 4. If the project has a `.skills/` directory, migrate it to `.ai/skills/`
 
 ## Workspace Bootstrap

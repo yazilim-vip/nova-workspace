@@ -10,9 +10,12 @@ NOVA is a markdown-based framework built on the [AGENTS.md](https://agents.md) c
 
 - **`AGENTS.md`** — the agent's identity, safety rules, and navigation protocol.
 - **`SOUL.md`** — voice and depth, loaded only when the task demands it.
-- **`.ai/skills/`** — three framework-shipped skills (`workspace-onboarding`, `self-update`, `project-scaffold`) plus whatever team-shared skills you commit here.
+- **`.ai/skills/`** — two framework-shipped procedural skills (`workspace-onboarding`, `self-update`) plus whatever team-shared skills you commit here.
+- **`.ai/project-structure.md`** — the NOVA convention for how a single project organizes its agent-facing content. A reference doc, not a skill.
 - **`.ai/workspace/`** — the local workspace instance (gitignored; populated during onboarding). Personal local-only skills live at `.ai/workspace/skills/`.
 - **`git-repositories/`** — the clone convention (`<platform>/<group>/<repo>`; gitignored).
+
+**Mental model:** `.ai/skills/` = things the agent *does* on trigger. Flat docs under `.ai/` = things the agent *reads* when context demands. Don't mix the two.
 
 ## Why workspace-level, not repo-level?
 
