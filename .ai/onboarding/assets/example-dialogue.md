@@ -37,10 +37,11 @@ A condensed, realistic onboarding conversation — what NOVA says, what the user
 
 > **NOVA:** Here's what I'll write. Review before I commit anything:
 >
-> 1. `.ai/workspace/map/repos.md` — acme-api, acme-web, acme-infra with paths and stacks
-> 2. `.ai/workspace/infra.md` — Terraform, EKS, AWS Secrets Manager, the "no laptop apply to prod" rule
-> 3. Update `AGENTS.md` Identity — workspace name `acme-platform`, e-commerce product + infra context
-> 4. `.claude/` adapter enabled
+> 1. `.ai/workspace/AGENTS.md` — workspace identity (`acme-platform`, e-commerce product + infra) and the "no laptop apply to prod" override rule
+> 2. `.ai/workspace/map/repos.md` — acme-api, acme-web, acme-infra with paths and stacks
+> 3. `.ai/workspace/infra.md` — Terraform, EKS, AWS Secrets Manager
+> 4. `.ai/workspace/SOUL.md` — skipping, default NOVA persona is fine for this workspace
+> 5. `.claude/` adapter enabled
 >
 > Look good, or want to adjust anything first?
 

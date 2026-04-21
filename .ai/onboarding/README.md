@@ -8,6 +8,8 @@ See [assets/example-dialogue.md](assets/example-dialogue.md) for a full example 
 
 ## When to Trigger
 
+- `.ai/workspace/.initialized` does not exist
+- `.ai/workspace/AGENTS.md` does not exist
 - `.ai/workspace/map/repos.md` does not exist
 - `.ai/workspace/infra.md` does not exist
 - User says "set up workspace", "first time", "onboard me", or similar
@@ -58,12 +60,14 @@ Capture: primary tool for adapter commit decision.
 
 ## Output
 
+All onboarding output lands under `.ai/workspace/`. Never edit the root `AGENTS.md` or `SOUL.md` — those are framework defaults owned by upstream.
+
 After collecting answers, generate:
 
-1. **`.ai/workspace/map/repos.md`** — populated from the repo answers, using the template at `.ai/onboarding/assets/map/repos.md`
-2. **`.ai/workspace/infra.md`** — populated from infra and rules answers, using the template at `.ai/onboarding/assets/infra.md`
-3. **Update `AGENTS.md` Identity section** — workspace name and purpose
-4. **Update `SOUL.md`** — adjust identity paragraph if workspace differs significantly from default
+1. **`.ai/workspace/AGENTS.md`** — workspace identity + any override rules, from the template at `.ai/onboarding/assets/AGENTS.md`. This is the file the agent layers on top of root `AGENTS.md` every session.
+2. **`.ai/workspace/SOUL.md`** — only if the workspace needs persona overrides (tone, language, extra boundaries). Skip otherwise. Template: `.ai/onboarding/assets/SOUL.md`.
+3. **`.ai/workspace/map/repos.md`** — populated from the repo answers, using the template at `.ai/onboarding/assets/map/repos.md`.
+4. **`.ai/workspace/infra.md`** — populated from infra and rules answers, using the template at `.ai/onboarding/assets/infra.md`.
 
 Show each file to the user before writing. Ask for confirmation.
 
