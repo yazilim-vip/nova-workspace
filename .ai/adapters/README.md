@@ -45,6 +45,8 @@ Kiro has known terminal integration bugs that hang the CLI session on heredocs, 
 
 Claude Code reads `CLAUDE.md` natively and supports `@path` imports that expand into context at session start. The generated `.claude/CLAUDE.md` uses `@../AGENTS.md` to robustly load the framework instructions, rather than relying on a plain text "read AGENTS.md" instruction (which is context, not enforcement). No Claude-specific rule sources currently — Claude Code's host behavior is well-aligned with NOVA's expectations out of the box.
 
+**Auto-memory redirection.** Claude Code writes auto-memory (things it remembers across sessions) to `~/.claude/projects/<project>/memory/` by default — user-scoped, not project-scoped. The adapter also ships a settings snippet at `.ai/adapters/claude/settings-snippet.json` that redirects auto-memory into the project's own `.claude/memory/` directory via the `autoMemoryDirectory` setting. Merge it into `.claude/settings.local.json` during generation (do **not** overwrite existing permissions). Reason this lives in local settings, not shared: Claude Code explicitly refuses `autoMemoryDirectory` from `.claude/settings.json` to prevent a shared repo from hijacking a teammate's memory path — so this is per-dev by design, not a bug.
+
 More platforms get added to the table as they're supported.
 
 ## When to Trigger
@@ -60,8 +62,9 @@ More platforms get added to the table as they're supported.
    - If it doesn't exist, create it.
    - If it already has files, list them and ask before overwriting. Don't clobber existing user customizations silently.
 3. **Copy steering templates only.** Copy everything under `.ai/adapters/<platform>/steering/` to the platform's output directory. Do **not** copy top-level rule sources (e.g. `terminal.md`) — they stay in the framework and are referenced by path from the steering files.
-4. **Verify `.gitignore`.** The platform's output directory must be gitignored at the workspace root. If it's not, add it and tell the user.
-5. **Report.** Tell the user what was generated, where, and how to test it (restart the agent, open a chat, confirm it references NOVA's files rather than repeating their contents).
+4. **Merge settings snippets, if any.** If the platform ships a `settings-snippet.json` (or equivalent) under `.ai/adapters/<platform>/`, merge it into the platform's local settings file — **merge, don't overwrite**. If the target file already has keys, preserve them; only add or update what the snippet specifies. Example: Claude → merge `.ai/adapters/claude/settings-snippet.json` into `.claude/settings.local.json`.
+5. **Verify `.gitignore`.** The platform's output directory must be gitignored at the workspace root. If it's not, add it and tell the user.
+6. **Report.** Tell the user what was generated, where, and how to test it (restart the agent, open a chat, confirm it references NOVA's files rather than repeating their contents).
 
 ## Authoring rules (when editing templates)
 
