@@ -4,7 +4,9 @@ Framework procedure — read when the user asks to set up, generate, or refresh 
 
 ## Why adapters exist
 
-Claude Code auto-reads `AGENTS.md` at the workspace root. Other agents don't — each has its own steering/rules convention and won't pick up NOVA's navigation protocol on its own. Adapters bridge that gap by giving the host agent a tiny pointer that tells it where NOVA's real instructions live.
+Each agent has its own rules/memory/steering convention, and none of them read NOVA's files the same way. Adapters bridge the gap by giving each host agent a tiny pointer — in its native format — that tells it where NOVA's real instructions live.
+
+Note: **Claude Code does not natively read `AGENTS.md`** (only `CLAUDE.md`). A committed root `CLAUDE.md` with the plain text "read AGENTS.md" is a text instruction, not enforcement. The Claude adapter strengthens this by generating a `.claude/CLAUDE.md` that uses Claude's native `@path` import syntax to load `AGENTS.md` into context at session start — same mechanism as any `CLAUDE.md`.
 
 ## Core principle — **STRICT**
 
@@ -33,10 +35,15 @@ Each platform directory has two kinds of files:
 | Platform | Steering templates | Output dir | Inclusion mechanism |
 |----------|-------------------|-----------|---------------------|
 | Kiro | `.ai/adapters/kiro/steering/` | `.kiro/steering/` | YAML front matter (`inclusion: always`) |
+| Claude Code | `.ai/adapters/claude/steering/` | `.claude/` | `@path` imports (native to `CLAUDE.md`) |
 
 ### Kiro — terminal hazards
 
 Kiro has known terminal integration bugs that hang the CLI session on heredocs, complex multi-line commands, long-running processes, and certain shell themes. Strict rules live in `.ai/adapters/kiro/terminal.md` (source of truth), referenced by the steering pointer in `.ai/adapters/kiro/steering/nova.md`. Treat them as non-negotiable — they exist because users hit those hangs repeatedly.
+
+### Claude Code — import-based pointer
+
+Claude Code reads `CLAUDE.md` natively and supports `@path` imports that expand into context at session start. The generated `.claude/CLAUDE.md` uses `@../AGENTS.md` to robustly load the framework instructions, rather than relying on a plain text "read AGENTS.md" instruction (which is context, not enforcement). No Claude-specific rule sources currently — Claude Code's host behavior is well-aligned with NOVA's expectations out of the box.
 
 More platforms get added to the table as they're supported.
 
