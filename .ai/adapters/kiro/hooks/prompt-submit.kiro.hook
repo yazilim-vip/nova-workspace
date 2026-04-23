@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "NOVA prompt checklist",
+  "description": "Re-injects the NOVA nav checklist on every user prompt. Counters context rot. Source of truth: .ai/adapters/_shared/checklist.md",
+  "version": "1",
+  "when": {
+    "type": "promptSubmit"
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "bash .kiro/hooks/prompt-submit.sh"
+  }
+}

@@ -1,12 +1,14 @@
 # Adapters
 
-Framework procedure — read when the user asks to set up, generate, or refresh a non-Claude agent adapter (Kiro, Cursor, Windsurf, Copilot, etc.). Not a skill.
+Framework procedure — read when the user asks to set up, generate, or refresh an agent adapter (Claude Code, Kiro, and future platforms). Not a skill.
 
 ## Why adapters exist
 
-Each agent has its own rules/memory/steering convention, and none of them read NOVA's files the same way. Adapters bridge the gap by giving each host agent a tiny pointer — in its native format — that tells it where NOVA's real instructions live.
+Each agent has its own rules/memory/steering/hook convention, and none of them read NOVA's files the same way. Adapters bridge the gap by giving each host agent a tiny pointer — in its native format — that tells it where NOVA's real instructions live, plus platform-native enforcement that converts prose suggestions into deterministic context.
 
-Note: **Claude Code does not natively read `AGENTS.md`** (only `CLAUDE.md`). A committed root `CLAUDE.md` with the plain text "read AGENTS.md" is a text instruction, not enforcement. The Claude adapter strengthens this by generating a `.claude/CLAUDE.md` that uses Claude's native `@path` import syntax to load `AGENTS.md` into context at session start — same mechanism as any `CLAUDE.md`.
+**The enforcement contract lives at `.ai/enforcement.md`.** Three MUST capabilities (session-start broadcast, per-turn re-injection, scoped activation) and two SHOULD capabilities (pre-edit gate, focused subagent). Every adapter's README maps the contract to its platform-native mechanism. Read the contract before editing an adapter.
+
+Note: **Claude Code does not natively read `AGENTS.md`** (only `CLAUDE.md`). A committed root `CLAUDE.md` with the plain text "read AGENTS.md" is a text instruction, not enforcement. The Claude adapter strengthens this by generating a `.claude/CLAUDE.md` that uses Claude's native `@path` import syntax to load `AGENTS.md` (plus workspace `AGENTS.md` and `repos.md`) into context at session start — transitive `@` expansion, same mechanism as any `CLAUDE.md`.
 
 ## Core principle — **STRICT**
 
@@ -23,31 +25,38 @@ Every rule NOVA enforces — safety, navigation, identity, skills — already li
 
 ## Directory shape
 
-Each platform directory has two kinds of files:
+Each platform directory has three kinds of files:
 
-| Subdir | Purpose | Copied to user workspace? |
-|--------|---------|---------------------------|
-| `.ai/adapters/<platform>/steering/` | Templates for the platform's rules engine. Pure pointers. | Yes — copied to platform's output dir on generate. |
-| `.ai/adapters/<platform>/*.md` (top-level) | Platform-specific rule sources of truth, referenced from the steering templates. | No — stay in framework, referenced by path. |
+| Subdir / file | Purpose | Copied to user workspace? |
+|---------------|---------|---------------------------|
+| `.ai/adapters/<platform>/README.md` | Adapter README — capability mapping table, platform specifics. | No — framework-committed docs. |
+| `.ai/adapters/<platform>/steering/` | Templates for the platform's rules engine. Pure pointers. | Yes — copied to platform's output dir. |
+| `.ai/adapters/<platform>/hooks/` | Hook scripts + platform hook config (e.g. `.kiro.hook`). Reference `_shared/` content. | Yes — copied + chmod +x. |
+| `.ai/adapters/<platform>/*.md` (top-level) | Platform-specific rule sources of truth, referenced from steering/hooks. | No — stay in framework, referenced by path. |
+| `.ai/adapters/<platform>/*-snippet.json` | Settings fragments to merge into the platform's config. | Merged, not copied wholesale. |
+
+**`.ai/adapters/_shared/`** is not a platform directory — it holds content used by every adapter (e.g. `checklist.md` consumed by all per-turn hooks). The adapter procedure MUST skip `_shared/` when enumerating platforms.
 
 ## Supported platforms
 
-| Platform | Steering templates | Output dir | Inclusion mechanism |
-|----------|-------------------|-----------|---------------------|
-| Kiro | `.ai/adapters/kiro/steering/` | `.kiro/steering/` | YAML front matter (`inclusion: always`) |
-| Claude Code | `.ai/adapters/claude/steering/` | `.claude/` | `@path` imports (native to `CLAUDE.md`) |
+| Platform | Adapter dir | Output dir | Enforcement primitives used |
+|----------|-------------|-----------|-----------------------------|
+| Claude Code | `.ai/adapters/claude/` | `.claude/` | `@path` imports + `SessionStart` / `UserPromptSubmit` hooks + subdir `CLAUDE.md` shims |
+| Kiro | `.ai/adapters/kiro/` | `.kiro/` | `inclusion: always/fileMatch` steering + `#[[file:]]` live refs + `promptSubmit` hook |
 
 ### Kiro — terminal hazards
 
 Kiro has known terminal integration bugs that hang the CLI session on heredocs, complex multi-line commands, long-running processes, and certain shell themes. Strict rules live in `.ai/adapters/kiro/terminal.md` (source of truth), referenced by the steering pointer in `.ai/adapters/kiro/steering/nova.md`. Treat them as non-negotiable — they exist because users hit those hangs repeatedly.
 
-### Claude Code — import-based pointer
+### Claude Code — see `.ai/adapters/claude/README.md`
 
-Claude Code reads `CLAUDE.md` natively and supports `@path` imports that expand into context at session start. The generated `.claude/CLAUDE.md` uses `@../AGENTS.md` to robustly load the framework instructions, rather than relying on a plain text "read AGENTS.md" instruction (which is context, not enforcement). No Claude-specific rule sources currently — Claude Code's host behavior is well-aligned with NOVA's expectations out of the box.
+Full capability mapping and platform specifics (chained `@` imports, `SessionStart` + `UserPromptSubmit` hooks, auto-memory redirection, subdir shims for per-repo scope) live in the adapter's own README. Read it when editing any `.ai/adapters/claude/` file.
 
-**Auto-memory redirection.** Claude Code writes auto-memory (things it remembers across sessions) to `~/.claude/projects/<project>/memory/` by default — user-scoped, not project-scoped. The adapter also ships a settings snippet at `.ai/adapters/claude/settings-snippet.json` that redirects auto-memory into the project's own `.claude/memory/` directory via the `autoMemoryDirectory` setting. Merge it into `.claude/settings.local.json` during generation (do **not** overwrite existing permissions). Reason this lives in local settings, not shared: Claude Code explicitly refuses `autoMemoryDirectory` from `.claude/settings.json` to prevent a shared repo from hijacking a teammate's memory path — so this is per-dev by design, not a bug.
+### Kiro — see `.ai/adapters/kiro/README.md`
 
-More platforms get added to the table as they're supported.
+Full capability mapping and platform specifics (`inclusion: always/fileMatch` steering, `#[[file:]]` live references, `promptSubmit` hook) live in the adapter's own README.
+
+More platforms get added as they're supported.
 
 ## When to Trigger
 
@@ -57,14 +66,33 @@ More platforms get added to the table as they're supported.
 
 ## Procedure
 
-1. **Confirm the platform.** Ask which IDE/agent the user wants to adapt for. Only supported platforms from the table above.
+1. **Confirm the platform.** Ask which IDE/agent the user wants to adapt for. Only supported platforms from the table above. Skip `_shared/` — it is not a platform.
 2. **Check the output directory.**
    - If it doesn't exist, create it.
    - If it already has files, list them and ask before overwriting. Don't clobber existing user customizations silently.
-3. **Copy steering templates only.** Copy everything under `.ai/adapters/<platform>/steering/` to the platform's output directory. Do **not** copy top-level rule sources (e.g. `terminal.md`) — they stay in the framework and are referenced by path from the steering files.
-4. **Merge settings snippets, if any.** If the platform ships a `settings-snippet.json` (or equivalent) under `.ai/adapters/<platform>/`, merge it into the platform's local settings file — **merge, don't overwrite**. If the target file already has keys, preserve them; only add or update what the snippet specifies. Example: Claude → merge `.ai/adapters/claude/settings-snippet.json` into `.claude/settings.local.json`.
-5. **Verify `.gitignore`.** The platform's output directory must be gitignored at the workspace root. If it's not, add it and tell the user.
-6. **Report.** Tell the user what was generated, where, and how to test it (restart the agent, open a chat, confirm it references NOVA's files rather than repeating their contents).
+3. **Copy steering templates.** Copy everything under `.ai/adapters/<platform>/steering/` to the platform's steering output directory. Do **not** copy top-level rule sources (e.g. `terminal.md`) — they stay in the framework and are referenced by path from the steering files.
+4. **Install hooks.** For each file in `.ai/adapters/<platform>/hooks/`:
+   - Copy `*.sh` scripts into the platform's runtime hook directory (`.claude/hooks/`, `.kiro/hooks/`).
+   - `chmod +x` each copied script.
+   - Copy platform hook config files (`*.kiro.hook` for Kiro) into the same runtime hook directory.
+   - Verify each script is readable and executable; do a dry-run `bash -n` syntax check before considering the step done.
+   - **Never rewrite a user's existing hook script without asking** — if the target path exists and differs, surface the diff first.
+5. **Merge settings snippets, if any.** If the platform ships a `*-snippet.json` under `.ai/adapters/<platform>/`, merge it into the platform's local settings file — **merge, don't overwrite**. Rules:
+   - Preserve every existing top-level key (permissions, env, etc.).
+   - For nested arrays (e.g. `hooks.SessionStart`), append entries — do not replace the array. User-authored hooks must survive the merge.
+   - Example: Claude → merge `.ai/adapters/claude/settings-snippet.json` into `.claude/settings.local.json`.
+   - Prefer a dry-run diff output to the user before applying if ambiguity exists.
+6. **Generate per-repo artifacts (C3 — scoped rule activation).** For each cloned repo under `git-repositories/` that also appears in `.ai/workspace/map/repos.md`:
+   - **Claude:** render `.ai/adapters/claude/templates/repo-shim.md` with `{{REPO_NAME}}` and `{{REPO_PATH}}` → `git-repositories/<repo-path>/.claude/CLAUDE.md`. Do **not** write anywhere else inside the repo. The file is gitignored by the repo's own `.gitignore` (add `.claude/` to the repo's `.gitignore` if absent — ask the user first, since we're touching a different repo).
+   - **Kiro:** render `.ai/adapters/kiro/templates/repo-steering.md` → `.kiro/steering/<slug>.md` where `<slug>` is the repo's path with `/` replaced by `-`.
+   - Skip repos in `repos.md` that aren't cloned. Warn on repos that are cloned but missing from `repos.md`.
+   - Idempotency: if the target file already exists and matches the template, do nothing. If it differs (user edited), show the diff and confirm before overwriting.
+7. **Verify `.gitignore`.** The platform's output directory must be gitignored at the workspace root. If it's not, add it and tell the user.
+8. **Report.** Tell the user what was generated, where, and how to test it:
+   - Restart the agent.
+   - Open a chat; confirm the agent references NOVA's files rather than repeating their contents.
+   - For per-turn hooks: ask the agent "was a NOVA checklist injected this turn?" — a yes confirms C2 is wired.
+   - For scoped activation: open a file under `git-repositories/<any-repo>/`, ask "what are this repo's conventions?" — the agent should answer without a prior tool call.
 
 ## Authoring rules (when editing templates)
 

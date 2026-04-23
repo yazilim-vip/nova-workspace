@@ -68,6 +68,7 @@ After collecting answers, generate:
 2. **`.ai/workspace/SOUL.md`** — only if the workspace needs persona overrides (tone, language, extra boundaries). Skip otherwise. Template: `.ai/onboarding/assets/SOUL.md`.
 3. **`.ai/workspace/map/repos.md`** — populated from the repo answers, using the template at `.ai/onboarding/assets/map/repos.md`.
 4. **`.ai/workspace/infra.md`** — populated from infra and rules answers, using the template at `.ai/onboarding/assets/infra.md`.
+5. **`.ai/workspace/learnings/drift-log.md`** — copy the seed from `.ai/onboarding/assets/learnings/drift-log.md` verbatim. No user input needed; it's the measurement log for `.ai/enforcement.md`.
 
 Show each file to the user before writing. Ask for confirmation.
 
