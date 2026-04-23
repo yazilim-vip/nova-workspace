@@ -33,6 +33,7 @@ Each platform directory has three kinds of files:
 | `.ai/adapters/<platform>/steering/` | Templates for the platform's rules engine. Pure pointers. | Yes — copied to platform's output dir. |
 | `.ai/adapters/<platform>/hooks/` | Hook scripts + platform hook config (e.g. `.kiro.hook`). Reference `_shared/` content. | Yes — copied + chmod +x. |
 | `.ai/adapters/<platform>/agents/` | Subagent templates (markdown with YAML frontmatter). Pre-load scoped context into a fresh window. | Yes — copied to platform's agents output dir. |
+| `.ai/adapters/<platform>/commands/` | Slash-command / skill shortcuts that wrap subagents or procedures. Platform-native format. | Yes — copied to platform's commands output dir when the platform supports it. |
 | `.ai/adapters/<platform>/*.md` (top-level) | Platform-specific rule sources of truth, referenced from steering/hooks. | No — stay in framework, referenced by path. |
 | `.ai/adapters/<platform>/*-snippet.json` | Settings fragments to merge into the platform's config. | Merged, not copied wholesale. |
 
@@ -72,10 +73,10 @@ More platforms get added as they're supported.
    - If it doesn't exist, create it.
    - If it already has files, list them and ask before overwriting. Don't clobber existing user customizations silently.
 3. **Copy steering templates.** Copy everything under `.ai/adapters/<platform>/steering/` to the platform's steering output directory. Do **not** copy top-level rule sources (e.g. `terminal.md`) — they stay in the framework and are referenced by path from the steering files.
-4. **Install subagents.** For each file in `.ai/adapters/<platform>/agents/`:
-   - Copy to the platform's agents runtime directory (`.claude/agents/`, `.kiro/agents/`).
-   - Preserve existing user-authored agents — ask before overwriting if the target exists and differs from the template.
-   - Claude Code: subagents load at session start. User must restart Claude Code or use `/agents` to reload after changes.
+4. **Install subagents and commands.** For each file in `.ai/adapters/<platform>/agents/` and `.ai/adapters/<platform>/commands/` (if present):
+   - Copy to the platform's matching runtime directory (`.claude/agents/`, `.claude/commands/`, `.kiro/agents/`; Kiro invokes subagents by name, so no separate commands dir).
+   - Preserve existing user-authored files — ask before overwriting if the target exists and differs from the template.
+   - Claude Code loads both at session start. User must restart Claude Code or use `/agents` to reload after changes.
 5. **Install hooks.** For each file in `.ai/adapters/<platform>/hooks/`:
    - Copy `*.sh` scripts into the platform's runtime hook directory (`.claude/hooks/`, `.kiro/hooks/`).
    - `chmod +x` each copied script.

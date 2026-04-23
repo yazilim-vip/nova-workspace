@@ -50,7 +50,9 @@ Hooks `cat` a shared file. They do not paraphrase. If future work tempts you to 
 
 ## Subagents
 
-`agents/repo-worker.md` is a generic archetype for tasks scoped to one repo under `git-repositories/`. It:
+### `agents/repo-worker.md`
+
+Generic archetype for tasks scoped to one repo under `git-repositories/`. It:
 
 - Pre-loads framework + workspace + repo-map via `@../../AGENTS.md`, `@../../.ai/workspace/AGENTS.md`, `@../../.ai/workspace/map/repos.md` (paths resolve from the runtime location `.claude/agents/repo-worker.md`).
 - Runs in a fresh context window — zero rot.
@@ -58,7 +60,21 @@ Hooks `cat` a shared file. They do not paraphrase. If future work tempts you to 
 
 **When to invoke.** When main context is getting long, when a task is bounded to one repo, or explicitly: *"Use repo-worker to <task> in <repo>"*. Claude auto-delegates based on the subagent's description; manual invocation via `/agents` also works.
 
-**Adding archetypes.** Don't add `frontend-repo`, `backend-repo`, etc. speculatively — only when a concrete pattern is repeating and its maintenance cost is clearly worth it.
+### `agents/dream-worker.md`
+
+Memory-consolidation archetype. Read-only (`tools: Read, Grep, Glob`). Reviews `.ai/workspace/learnings/`, `.ai/workspace/drift-log.md`, and per-repo `AGENTS.md` files; returns a structured Dream Report of proposals. User approves; parent applies.
+
+**When to invoke.** User-triggered only — via `/dream` slash command, or explicit "use the dream-worker subagent". Auto-invocation is disabled on the command side so Claude doesn't proactively tidy the workspace. Full procedure at `.ai/dream/README.md`.
+
+### Adding archetypes
+
+Don't add `frontend-repo`, `backend-repo`, etc. speculatively — only when a concrete pattern is repeating and its maintenance cost is clearly worth it.
+
+## Commands
+
+### `commands/dream.md` → `/dream`
+
+Shortcut that delegates to the `dream-worker` subagent. Uses `disable-model-invocation: true` — Claude will not invoke `/dream` on its own; only the user can trigger it. MVP is strictly user-triggered; scheduled/automatic dreaming is explicitly deferred per `.ai/dream/README.md`.
 
 ## Regeneration
 

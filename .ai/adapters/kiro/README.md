@@ -41,9 +41,15 @@ Steering points at `AGENTS.md` and `.ai/` paths — does not reproduce them. The
 
 ## Subagents
 
-`agents/repo-worker.md` is a generic archetype for tasks scoped to one repo under `git-repositories/`. Pre-loads framework + workspace + repo-map via `#[[file:]]` live refs, then reads the target repo's own `AGENTS.md` as its first action. Fresh Kiro subagent context → zero rot.
+### `agents/repo-worker.md`
+
+Generic archetype for tasks scoped to one repo under `git-repositories/`. Pre-loads framework + workspace + repo-map via `#[[file:]]` live refs, then reads the target repo's own `AGENTS.md` as its first action. Fresh Kiro subagent context → zero rot.
 
 Invoke via auto-selection, `/repo-worker`, or "use the repo-worker subagent to..." in chat.
+
+### `agents/dream-worker.md`
+
+Memory-consolidation archetype. Tools restricted to `read`, `grep`, `glob`. Reviews `.ai/workspace/learnings/`, `.ai/workspace/drift-log.md`, and per-repo `AGENTS.md` files; returns a structured Dream Report. User-triggered via `/dream-worker` or "use the dream-worker subagent". Full procedure at `.ai/dream/README.md`.
 
 ## Regeneration
 
