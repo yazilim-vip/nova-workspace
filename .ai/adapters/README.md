@@ -32,6 +32,7 @@ Each platform directory has three kinds of files:
 | `.ai/adapters/<platform>/README.md` | Adapter README — capability mapping table, platform specifics. | No — framework-committed docs. |
 | `.ai/adapters/<platform>/steering/` | Templates for the platform's rules engine. Pure pointers. | Yes — copied to platform's output dir. |
 | `.ai/adapters/<platform>/hooks/` | Hook scripts + platform hook config (e.g. `.kiro.hook`). Reference `_shared/` content. | Yes — copied + chmod +x. |
+| `.ai/adapters/<platform>/agents/` | Subagent templates (markdown with YAML frontmatter). Pre-load scoped context into a fresh window. | Yes — copied to platform's agents output dir. |
 | `.ai/adapters/<platform>/*.md` (top-level) | Platform-specific rule sources of truth, referenced from steering/hooks. | No — stay in framework, referenced by path. |
 | `.ai/adapters/<platform>/*-snippet.json` | Settings fragments to merge into the platform's config. | Merged, not copied wholesale. |
 
@@ -71,28 +72,33 @@ More platforms get added as they're supported.
    - If it doesn't exist, create it.
    - If it already has files, list them and ask before overwriting. Don't clobber existing user customizations silently.
 3. **Copy steering templates.** Copy everything under `.ai/adapters/<platform>/steering/` to the platform's steering output directory. Do **not** copy top-level rule sources (e.g. `terminal.md`) — they stay in the framework and are referenced by path from the steering files.
-4. **Install hooks.** For each file in `.ai/adapters/<platform>/hooks/`:
+4. **Install subagents.** For each file in `.ai/adapters/<platform>/agents/`:
+   - Copy to the platform's agents runtime directory (`.claude/agents/`, `.kiro/agents/`).
+   - Preserve existing user-authored agents — ask before overwriting if the target exists and differs from the template.
+   - Claude Code: subagents load at session start. User must restart Claude Code or use `/agents` to reload after changes.
+5. **Install hooks.** For each file in `.ai/adapters/<platform>/hooks/`:
    - Copy `*.sh` scripts into the platform's runtime hook directory (`.claude/hooks/`, `.kiro/hooks/`).
    - `chmod +x` each copied script.
    - Copy platform hook config files (`*.kiro.hook` for Kiro) into the same runtime hook directory.
    - Verify each script is readable and executable; do a dry-run `bash -n` syntax check before considering the step done.
    - **Never rewrite a user's existing hook script without asking** — if the target path exists and differs, surface the diff first.
-5. **Merge settings snippets, if any.** If the platform ships a `*-snippet.json` under `.ai/adapters/<platform>/`, merge it into the platform's local settings file — **merge, don't overwrite**. Rules:
+6. **Merge settings snippets, if any.** If the platform ships a `*-snippet.json` under `.ai/adapters/<platform>/`, merge it into the platform's local settings file — **merge, don't overwrite**. Rules:
    - Preserve every existing top-level key (permissions, env, etc.).
    - For nested arrays (e.g. `hooks.SessionStart`), append entries — do not replace the array. User-authored hooks must survive the merge.
    - Example: Claude → merge `.ai/adapters/claude/settings-snippet.json` into `.claude/settings.local.json`.
    - Prefer a dry-run diff output to the user before applying if ambiguity exists.
-6. **Generate per-repo artifacts (C3 — scoped rule activation).** For each cloned repo under `git-repositories/` that also appears in `.ai/workspace/map/repos.md`:
+7. **Generate per-repo artifacts (C3 — scoped rule activation).** For each cloned repo under `git-repositories/` that also appears in `.ai/workspace/map/repos.md`:
    - **Claude:** render `.ai/adapters/claude/templates/repo-shim.md` with `{{REPO_NAME}}` and `{{REPO_PATH}}` → `git-repositories/<repo-path>/.claude/CLAUDE.md`. Do **not** write anywhere else inside the repo. The file is gitignored by the repo's own `.gitignore` (add `.claude/` to the repo's `.gitignore` if absent — ask the user first, since we're touching a different repo).
    - **Kiro:** render `.ai/adapters/kiro/templates/repo-steering.md` → `.kiro/steering/<slug>.md` where `<slug>` is the repo's path with `/` replaced by `-`.
    - Skip repos in `repos.md` that aren't cloned. Warn on repos that are cloned but missing from `repos.md`.
    - Idempotency: if the target file already exists and matches the template, do nothing. If it differs (user edited), show the diff and confirm before overwriting.
-7. **Verify `.gitignore`.** The platform's output directory must be gitignored at the workspace root. If it's not, add it and tell the user.
-8. **Report.** Tell the user what was generated, where, and how to test it:
+8. **Verify `.gitignore`.** The platform's output directory must be gitignored at the workspace root. If it's not, add it and tell the user.
+9. **Report.** Tell the user what was generated, where, and how to test it:
    - Restart the agent.
    - Open a chat; confirm the agent references NOVA's files rather than repeating their contents.
    - For per-turn hooks: ask the agent "was a NOVA checklist injected this turn?" — a yes confirms C2 is wired.
    - For scoped activation: open a file under `git-repositories/<any-repo>/`, ask "what are this repo's conventions?" — the agent should answer without a prior tool call.
+   - For subagents: ask "is a repo-worker subagent available?" — Claude should list it via `/agents` or its description. Invoke it with a bounded task in a named repo.
 
 ## Authoring rules (when editing templates)
 

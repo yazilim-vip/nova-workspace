@@ -10,7 +10,7 @@ Implements `.ai/enforcement.md` for [Claude Code](https://code.claude.com). Gene
 | **C2** Per-turn re-injection | `UserPromptSubmit` hook | `hooks/user-prompt-submit.sh` | `.claude/hooks/user-prompt-submit.sh` |
 | **C3** Scoped rule activation | Subdir `CLAUDE.md` shim in each `git-repositories/<repo>/` (parent-dir walk + subdir discovery) | adapters/IDE procedure generator | `git-repositories/<repo>/.claude/CLAUDE.md` |
 | S1 Pre-edit gate | *(not yet implemented)* | | |
-| S2 Focused subagent | *(not yet implemented)* | | |
+| **S2** Focused subagent | Native Claude Code subagent (auto-delegated or invoked explicitly) | `agents/repo-worker.md` | `.claude/agents/repo-worker.md` |
 
 ## How the pointer chain works
 
@@ -48,13 +48,26 @@ Exit codes:
 
 Hooks `cat` a shared file. They do not paraphrase. If future work tempts you to inline a rule into a hook script, re-read `.ai/adapters/README.md` — the adapter is a pointer, not a copy. Same rule binds hooks.
 
+## Subagents
+
+`agents/repo-worker.md` is a generic archetype for tasks scoped to one repo under `git-repositories/`. It:
+
+- Pre-loads framework + workspace + repo-map via `@../../AGENTS.md`, `@../../.ai/workspace/AGENTS.md`, `@../../.ai/workspace/map/repos.md` (paths resolve from the runtime location `.claude/agents/repo-worker.md`).
+- Runs in a fresh context window — zero rot.
+- System prompt instructs it to read the target repo's own `AGENTS.md` as its first action (subagents don't inherit the parent's subdir `CLAUDE.md` walk, so C3 is enforced via the prompt here).
+
+**When to invoke.** When main context is getting long, when a task is bounded to one repo, or explicitly: *"Use repo-worker to <task> in <repo>"*. Claude auto-delegates based on the subagent's description; manual invocation via `/agents` also works.
+
+**Adding archetypes.** Don't add `frontend-repo`, `backend-repo`, etc. speculatively — only when a concrete pattern is repeating and its maintenance cost is clearly worth it.
+
 ## Regeneration
 
 Run the adapters procedure (`.ai/adapters/README.md`). It:
 
 1. Copies `steering/CLAUDE.md` → `.claude/CLAUDE.md`.
 2. Copies `hooks/*.sh` → `.claude/hooks/`, sets them executable.
-3. Merges `settings-snippet.json` into `.claude/settings.local.json` surgically.
-4. Reports what changed.
+3. Copies `agents/*.md` → `.claude/agents/`.
+4. Merges `settings-snippet.json` into `.claude/settings.local.json` surgically.
+5. Reports what changed.
 
 Runtime outputs (`.claude/`, subdir shims) are gitignored. Sources under `.ai/adapters/claude/` are committed.

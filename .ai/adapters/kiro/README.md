@@ -10,7 +10,7 @@ Implements `.ai/enforcement.md` for [Kiro](https://kiro.dev). Generates `.kiro/`
 | **C2** Per-turn re-injection | Hook with `promptSubmit` trigger, shell-command action | `hooks/prompt-submit.sh` + `hooks/prompt-submit.kiro.hook` | `.kiro/hooks/...` |
 | **C3** Scoped rule activation | `inclusion: fileMatch` steering per registered repo | adapters/IDE procedure generator | `.kiro/steering/<repo>.md` |
 | S1 Pre-edit gate | *(not yet implemented)* | | |
-| S2 Focused subagent | *(not yet implemented)* | | |
+| **S2** Focused subagent | Native Kiro IDE subagent (auto-selected or invoked via `/repo-worker`) | `agents/repo-worker.md` | `.kiro/agents/repo-worker.md` |
 
 ## Platform-specific sources of truth
 
@@ -39,6 +39,12 @@ The shell script is bash — macOS / Linux only. Windows users: pending.
 
 Steering points at `AGENTS.md` and `.ai/` paths — does not reproduce them. The `#[[file:]]` inclusion used in `nova.md` pulls Kiro's platform-specific `terminal.md` inline, but that file lives under `.ai/adapters/kiro/` by design (platform-specific source of truth). That is a reference, not a duplication.
 
+## Subagents
+
+`agents/repo-worker.md` is a generic archetype for tasks scoped to one repo under `git-repositories/`. Pre-loads framework + workspace + repo-map via `#[[file:]]` live refs, then reads the target repo's own `AGENTS.md` as its first action. Fresh Kiro subagent context → zero rot.
+
+Invoke via auto-selection, `/repo-worker`, or "use the repo-worker subagent to..." in chat.
+
 ## Regeneration
 
 Run the adapters procedure (`.ai/adapters/README.md`). It:
@@ -46,6 +52,7 @@ Run the adapters procedure (`.ai/adapters/README.md`). It:
 1. Copies `steering/*.md` → `.kiro/steering/`.
 2. Copies `hooks/*.sh` → `.kiro/hooks/`, sets executable.
 3. Copies `hooks/*.kiro.hook` → `.kiro/hooks/`.
-4. Reports what changed.
+4. Copies `agents/*.md` → `.kiro/agents/`.
+5. Reports what changed.
 
 Runtime outputs (`.kiro/`) are gitignored. Sources under `.ai/adapters/kiro/` are committed.

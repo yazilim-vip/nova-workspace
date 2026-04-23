@@ -57,9 +57,11 @@ Block `Edit` / `Write` actions on files under `git-repositories/<repo>/` until t
 
 ### S2 — Focused subagent
 
-Provide a subagent template that pre-loads scoped rules (workspace identity + target repo's `AGENTS.md`) into a fresh context window.
+Provide a subagent template that pre-loads scoped rules (workspace identity + nav protocol + repo map) into a fresh context window. Caller names the target repo at invocation; subagent's first action is to read that repo's `AGENTS.md`.
 
 **Rationale.** Rot is a function of context length. A fresh context for a focused task sidesteps the problem entirely — the chain is pre-walked at subagent-definition time, not at agent runtime.
+
+**Status.** Shipped as a single generic `repo-worker` archetype on both platforms. Sources: `.ai/adapters/claude/agents/repo-worker.md`, `.ai/adapters/kiro/agents/repo-worker.md`. Add more archetypes (frontend-repo, backend-repo) only when a concrete pattern repeats enough to justify maintenance.
 
 ## Adapter mapping table — template
 
