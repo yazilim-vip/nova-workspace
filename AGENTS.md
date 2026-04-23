@@ -55,6 +55,7 @@ These are NOT skills. They're how the framework configures and maintains itself.
 | onboarding | `.ai/onboarding/README.md` | First session, missing workspace files, "set up my workspace", "onboard me" |
 | self-update | `.ai/self-update/README.md` | "sync with upstream", "pull NOVA updates", reviewing upstream changes before merge |
 | adapters | `.ai/adapters/README.md` | "set up kiro adapter", "generate steering for <ide>", host agent not reading `AGENTS.md` |
+| ide | `.ai/ide/README.md` | "set up intellij", "generate idea config", "register repos as intellij modules", "add run configuration for <module>" |
 
 ## Conventions
 
