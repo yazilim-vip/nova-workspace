@@ -88,17 +88,18 @@ More platforms get added as they're supported.
    - For nested arrays (e.g. `hooks.SessionStart`), append entries — do not replace the array. User-authored hooks must survive the merge.
    - Example: Claude → merge `.ai/adapters/claude/settings-snippet.json` into `.claude/settings.local.json`.
    - Prefer a dry-run diff output to the user before applying if ambiguity exists.
-7. **Generate per-repo artifacts (C3 — scoped rule activation).** For each cloned repo under `git-repositories/` that also appears in `.ai/workspace/map/repos.md`:
-   - **Claude:** render `.ai/adapters/claude/templates/repo-shim.md` with `{{REPO_NAME}}` and `{{REPO_PATH}}` → `git-repositories/<repo-path>/.claude/CLAUDE.md`. Do **not** write anywhere else inside the repo. The file is gitignored by the repo's own `.gitignore` (add `.claude/` to the repo's `.gitignore` if absent — ask the user first, since we're touching a different repo).
-   - **Kiro:** render `.ai/adapters/kiro/templates/repo-steering.md` → `.kiro/steering/<slug>.md` where `<slug>` is the repo's path with `/` replaced by `-`.
+7. **Generate per-repo artifacts (C3 — scoped rule activation), platform permitting.** For each cloned repo under `git-repositories/` that also appears in `.ai/workspace/map/repos.md`:
+   - **Claude:** *no per-repo file is written.* Claude Code's only auto-load mechanism inside a repo would be a subdir `CLAUDE.md` shim, but writing into someone else's git-tracked tree creates persistent untracked-file noise and forces every cloned repo to gitignore the generated path. NOVA explicitly does NOT do that. C3 is delegated on Claude to **S2 — the `repo-worker` subagent** (a fresh-context agent the caller invokes with the target repo name; its system prompt makes "read this repo's `AGENTS.md`" its first action). For ad-hoc sessions in the main agent, the Navigation Protocol step 4 ("Enter the project — read its `AGENTS.md`") is followed manually.
+   - **Kiro:** render `.ai/adapters/kiro/templates/repo-steering.md` → `.kiro/steering/<slug>.md` where `<slug>` is the repo's path with `/` replaced by `-`. Kiro's `inclusion: fileMatch` mechanism is workspace-scoped (lives entirely under `.kiro/`) and never touches `git-repositories/<repo>/`, so it's safe.
    - Skip repos in `repos.md` that aren't cloned. Warn on repos that are cloned but missing from `repos.md`.
    - Idempotency: if the target file already exists and matches the template, do nothing. If it differs (user edited), show the diff and confirm before overwriting.
+   - **Hard rule (all platforms): the adapters procedure MUST NOT write inside `git-repositories/<repo>/`.** Every adapter artifact lives under the workspace root (`.claude/`, `.kiro/`, etc.). If a future capability "needs" to write into a cloned repo, it has to ship as a separate, opt-in procedure with explicit per-repo consent — not as part of the default adapters flow.
 8. **Verify `.gitignore`.** The platform's output directory must be gitignored at the workspace root. If it's not, add it and tell the user.
 9. **Report.** Tell the user what was generated, where, and how to test it:
    - Restart the agent.
    - Open a chat; confirm the agent references NOVA's files rather than repeating their contents.
    - For per-turn hooks: ask the agent "was a NOVA checklist injected this turn?" — a yes confirms C2 is wired.
-   - For scoped activation: open a file under `git-repositories/<any-repo>/`, ask "what are this repo's conventions?" — the agent should answer without a prior tool call.
+   - For scoped activation: open a file under `git-repositories/<any-repo>/`, ask "what are this repo's conventions?" — on Kiro the agent should answer without a prior tool call. **On Claude this requires the `repo-worker` subagent** (no auto-activation in the main agent — that's the price of not writing into cloned repos).
    - For subagents: ask "is a repo-worker subagent available?" — Claude should list it via `/agents` or its description. Invoke it with a bounded task in a named repo.
 
 ## Authoring rules (when editing templates)

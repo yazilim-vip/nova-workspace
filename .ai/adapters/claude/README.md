@@ -8,7 +8,7 @@ Implements `.ai/enforcement.md` for [Claude Code](https://code.claude.com). Gene
 |------------|-----------|-------------|------------------|
 | **C1** Session-start broadcast | `SessionStart` hook (matcher `startup\|resume\|clear`) | `hooks/session-start.sh` | `.claude/hooks/session-start.sh` |
 | **C2** Per-turn re-injection | `UserPromptSubmit` hook | `hooks/user-prompt-submit.sh` | `.claude/hooks/user-prompt-submit.sh` |
-| **C3** Scoped rule activation | Subdir `CLAUDE.md` shim in each `git-repositories/<repo>/` (parent-dir walk + subdir discovery) | adapters/IDE procedure generator | `git-repositories/<repo>/.claude/CLAUDE.md` |
+| **C3** Scoped rule activation | *Not implemented in the main agent.* Claude Code's only viable mechanism (a subdir `CLAUDE.md` shim) requires writing into someone else's git tree, which NOVA refuses to do. Delegated entirely to **S2** — the `repo-worker` subagent — whose system prompt makes "read the named repo's `AGENTS.md`" its first action. | — | — |
 | S1 Pre-edit gate | *(not yet implemented)* | | |
 | **S2** Focused subagent | Native Claude Code subagent (auto-delegated or invoked explicitly) | `agents/repo-worker.md` | `.claude/agents/repo-worker.md` |
 
@@ -22,7 +22,12 @@ Implements `.ai/enforcement.md` for [Claude Code](https://code.claude.com). Gene
 @../.ai/workspace/map/repos.md
 ```
 
-This handles Navigation Protocol steps 1–3 automatically. Step 4 (per-repo `AGENTS.md`) is handled by the subdir `CLAUDE.md` shim — when the user edits a file under `git-repositories/<repo>/`, Claude Code walks parent dirs and discovers the shim, which `@`-imports that repo's `AGENTS.md`.
+This handles Navigation Protocol steps 1–3 automatically.
+
+Step 4 (per-repo `AGENTS.md`) is **NOT** auto-loaded in the main agent. The historical mechanism — a subdir `CLAUDE.md` shim under `git-repositories/<repo>/` — was removed because it forced every cloned repo to either gitignore the generated path or live with persistent untracked-file noise, and we don't want the adapters procedure writing inside someone else's git tree at all. Per-repo activation is handled in two ways instead:
+
+- **`repo-worker` subagent (S2)** — fresh context, target repo named at invocation, system prompt makes "read this repo's `AGENTS.md`" its first action. Use this whenever a task is bounded to one repo.
+- **Manual Navigation Protocol step 4** — when staying in the main agent for an ad-hoc task in a repo, the agent reads that repo's `AGENTS.md` explicitly via the Navigation Protocol.
 
 ## Hooks
 
@@ -56,7 +61,7 @@ Generic archetype for tasks scoped to one repo under `git-repositories/`. It:
 
 - Pre-loads framework + workspace + repo-map via `@../../AGENTS.md`, `@../../.ai/workspace/AGENTS.md`, `@../../.ai/workspace/map/repos.md` (paths resolve from the runtime location `.claude/agents/repo-worker.md`).
 - Runs in a fresh context window — zero rot.
-- System prompt instructs it to read the target repo's own `AGENTS.md` as its first action (subagents don't inherit the parent's subdir `CLAUDE.md` walk, so C3 is enforced via the prompt here).
+- System prompt instructs it to read the target repo's own `AGENTS.md` as its first action. Since NOVA no longer ships subdir `CLAUDE.md` shims, this is the canonical C3 mechanism on Claude — there is no fallback path inside the cloned repo's tree.
 
 **When to invoke.** When main context is getting long, when a task is bounded to one repo, or explicitly: *"Use repo-worker to <task> in <repo>"*. Claude auto-delegates based on the subagent's description; manual invocation via `/agents` also works.
 
@@ -86,4 +91,4 @@ Run the adapters procedure (`.ai/adapters/README.md`). It:
 4. Merges `settings-snippet.json` into `.claude/settings.local.json` surgically.
 5. Reports what changed.
 
-Runtime outputs (`.claude/`, subdir shims) are gitignored. Sources under `.ai/adapters/claude/` are committed.
+Runtime outputs (the workspace-root `.claude/` only) are gitignored. Sources under `.ai/adapters/claude/` are committed. The procedure does NOT write anywhere under `git-repositories/<repo>/` — see `.ai/adapters/README.md` step 7 hard rule.

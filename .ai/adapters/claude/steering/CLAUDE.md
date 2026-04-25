@@ -33,7 +33,7 @@ The `@` imports at the top handle steps 1–3 automatically. The rest you load o
 1. `AGENTS.md` — framework defaults. **Auto-loaded via `@` import.**
 2. `.ai/workspace/AGENTS.md` — workspace identity and overrides. **Auto-loaded via `@` import** (if present).
 3. `.ai/workspace/map/repos.md` — repository map. **Auto-loaded via `@` import** (if present).
-4. Per-repo `AGENTS.md` — when entering a specific repo under `git-repositories/`. Auto-loaded via subdir `CLAUDE.md` shims dropped into each repo by the IDE/adapters procedure.
+4. Per-repo `AGENTS.md` — when entering a specific repo under `git-repositories/`. **Read on demand**, per Navigation Protocol step 4. NOVA does NOT drop subdir `CLAUDE.md` shims into cloned repos (the adapter procedure refuses to write under `git-repositories/<repo>/`). For tasks bounded to one repo, prefer the `repo-worker` subagent — it pre-loads framework + workspace + repo-map and reads the named repo's `AGENTS.md` as its first action.
 5. Skills, learnings, procedures — on demand per the Navigation Protocol.
 
 Do not preload (beyond the chain above). Do not guess. Do not duplicate.
@@ -44,6 +44,6 @@ This adapter implements the `.ai/enforcement.md` contract:
 
 - **C1 — Session-start broadcast** via `SessionStart` hook that prints `.ai/adapters/_shared/checklist.md`.
 - **C2 — Per-turn re-injection** via `UserPromptSubmit` hook that prints the same checklist.
-- **C3 — Scoped rule activation** via subdir `CLAUDE.md` shims in each `git-repositories/<repo>/` that `@`-import that repo's `AGENTS.md`.
+- **C3 — Scoped rule activation** is **not implemented in the main agent** on Claude. Auto-load inside a cloned repo would require writing into someone else's git tree, which the adapter procedure refuses. C3 is delegated to **S2 — `repo-worker` subagent**: caller names the target repo at invocation, the subagent's system prompt reads that repo's `AGENTS.md` as its first action.
 
 See `.ai/adapters/claude/README.md` for the capability mapping table.
