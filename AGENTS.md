@@ -56,6 +56,7 @@ These are NOT skills. They're how the framework configures and maintains itself.
 | self-update | `.ai/self-update/README.md` | "sync with upstream", "pull NOVA updates", reviewing upstream changes before merge |
 | adapters | `.ai/adapters/README.md` | "set up kiro adapter", "generate steering for <ide>", host agent not reading `AGENTS.md` |
 | ide | `.ai/ide/README.md` | "set up intellij", "generate idea config", "register repos as intellij modules", "add run configuration for <module>" |
+| terminal | `.ai/terminal/README.md` | "set up tmux", "set up my terminal", "I want a terminal IDE", "integrate Claude Code with neovim/tmux" |
 | dream | `.ai/dream/README.md` | "run a dream pass", "tidy up the workspace", "consolidate learnings", `/dream`, drift-log review |
 
 ## Conventions
