@@ -54,9 +54,15 @@ Capture: workspace-specific safety rules, repo management policy, CI/CD constrai
 
 ### 5. AI Tool
 
-> "Last one: which AI assistant are you primarily using here — Claude Code, Kiro, Cursor, something else? I'll set up the right adapter."
+> "Which AI assistant are you primarily using here — Claude Code, Kiro, Cursor, something else? I'll set up the right adapter."
 
 Capture: primary tool for adapter commit decision.
+
+### 6. Host Environments
+
+> "Last one: where do you actually run that CLI agent — in a plain terminal (iTerm2, Terminal.app, tmux), in VS Code's terminal pane, in IntelliJ IDEA's terminal pane, or several of these? Some hosts auto-attach extra MCP tools — IntelliJ in particular gives the agent symbol-resolution, refactoring, build, and DB tools — and the right doctrine only kicks in when you tell me you use that host."
+
+Capture: list of host environments the user runs CLI agents in (one or more of: `terminal`, `vscode`, `intellij`, etc.). This drives which platform-doctrine files under `.ai/adapters/<platform>/` are activated. Persisted in the workspace `AGENTS.md` "Host Environments" section.
 
 ## Output
 

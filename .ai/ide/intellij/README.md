@@ -5,6 +5,7 @@ Framework procedure — generate IntelliJ project config (`.idea/`) from the NOV
 ## When to trigger
 
 - "set up intellij", "generate idea config"
+- "sync intellij", "intellij is missing my new repo", "I just cloned a repo, update intellij" → use the **`sync intellij` standalone flow** (incremental, no backup) rather than the full setup
 - "register my repos as intellij modules", "add <repo> as an intellij module"
 - "create a run configuration for <module>", "add a spring boot run config for chart-ai"
 - User mentions IntelliJ isn't showing the cloned repos in the Project tool window
@@ -33,10 +34,11 @@ Templates with `{{PLACEHOLDERS}}` live under `templates/`. Research notes on the
    - If `.idea/` already exists at the workspace root, back it up to `.idea.bak-<YYYYMMDDHHMMSS>/` and tell the user. Never silently overwrite.
 
 2. **Scan**
-   - Walk `git-repositories/` for directories containing `.git/` — this is the ground truth of what's cloned.
+   - Walk `git-repositories/` for directories containing `.git/` — this is the ground truth of what's cloned. **Use unbounded depth** — repos can be nested arbitrarily deep under `<platform>/<org-path>/`, including extra group levels (e.g., `gitlab/yazilim.vip/community/projects/<group>/<repo>`). A `find` with `-maxdepth N` will silently miss them.
    - Enrich each hit from `repos.md`: description, tech stack, human-readable name where available.
    - If a repo is cloned but absent from `repos.md`, include it with a warning.
    - If a repo is in `repos.md` but not cloned, skip it — and tell the user which.
+   - **Nested project detection (monorepo case)** — for each cloned repo, peek inside it (depth ≤ 2) for build markers (`pom.xml`, `build.gradle[.kts]`, `package.json`, `go.mod`, `pyproject.toml`, `Cargo.toml`). See "Nested project detection" below for the heuristic and what to surface to the user.
 
 3. **Confirm**
    - Show the user the module list (name, path, detected tech). Wait for go-ahead before writing anything.
@@ -62,6 +64,55 @@ Templates with `{{PLACEHOLDERS}}` live under `templates/`. Research notes on the
      - "For Maven repos, right-click `pom.xml` in IntelliJ → **Add as Maven Project** to upgrade that module with proper dependency resolution."
      - "For Gradle repos, right-click `build.gradle[.kts]` → **Link Gradle Project**."
 
+7. **Verify (only when IntelliJ is the active host — see `.ai/workspace/AGENTS.md` Host Environments)**
+
+   Close the loop by asking IntelliJ what it actually sees:
+
+   - `mcp__idea__get_project_modules` → expected count + names match what we wrote to `modules.xml`.
+   - `mcp__idea__get_repositories` → expected VCS roots match `vcs.xml` (one per cloned repo + workspace root).
+   - `mcp__idea__get_run_configurations` → any configs we wrote are visible.
+
+   **Reload asymmetry — known IntelliJ behavior:** `modules.xml` auto-reloads as you write it; new `.iml` modules appear immediately. `vcs.xml` does **not** — IntelliJ caches VCS mappings, so newly added roots stay invisible to its UI until the user runs **File → Reload Project from Disk** (or restarts the IDE). If `get_repositories` count lags `get_project_modules` count, surface this exact instruction to the user — don't pretend the write succeeded fully.
+
+## Standalone flow: `sync intellij` (incremental, no backup)
+
+Triggered without full IDE setup — user wants to add new repos to an existing `.idea/` without rewriting the whole thing.
+
+When to use over the core flow: every time *after* the first run. The core flow's backup-and-overwrite makes sense once; sync is the steady-state.
+
+1. **Preflight** — confirm `.idea/` exists at the workspace root (if not, the user wants the core flow). Confirm `mcp__idea__*` tools are reachable (host must declare `intellij` per `.ai/adapters/<platform>/intellij-mcp.md`).
+
+2. **Diff IntelliJ vs. filesystem**
+
+   ```
+   filesystem repos = walk(git-repositories/) for .git directories  # unbounded depth — see core flow Phase 2
+   intellij modules = mcp__idea__get_project_modules()
+   intellij roots   = mcp__idea__get_repositories()
+   missing          = filesystem - intellij
+   stale            = intellij - filesystem        # cloned repo got deleted
+   ```
+
+   For each `missing` repo, also run **nested project detection** (see section below) — propose any sub-projects worth registering as separate modules.
+
+3. **Confirm with the user.** Show the diff: "I'll add N modules: <list>. I'll remove M stale modules: <list>." Wait for go-ahead. If sub-projects were detected in any new repo, surface them as a separate question — don't auto-register.
+
+4. **Surgical write — additions only**
+   - For each missing repo, render `templates/module.iml.tpl` → `.idea/modules/<repo>.iml`.
+   - Append one `<module ... group="<platform>/<org-path>" />` line to `.idea/modules.xml` inside `<modules>`.
+   - Append one `<mapping directory="$PROJECT_DIR$/git-repositories/.../<repo>" vcs="Git" />` line to `.idea/vcs.xml` inside `<component name="VcsDirectoryMappings">`.
+   - Do **not** rewrite or back up the rest of `.idea/`. This is intentional — preserves user customizations, run configs, scopes, hand-edited excludes.
+
+5. **Surgical removal — stale modules**
+   - For each stale module, delete `.idea/modules/<repo>.iml`.
+   - Remove the `<module>` line from `modules.xml`.
+   - Remove the `<mapping>` line from `vcs.xml`.
+
+6. **Verify** — run the same Phase 7 checks as the core flow:
+   - `get_project_modules` count matches expected post-sync count.
+   - `get_repositories` count matches — and warn the user about the VCS-mapping reload asymmetry if it lags.
+
+7. **Report** — additions, removals, and the explicit "if VCS panel looks stale, **File → Reload Project from Disk**" instruction.
+
 ## Standalone flow: `create a run config for <module>`
 
 Triggered without full IDE setup — user wants a specific config.
@@ -72,6 +123,62 @@ Triggered without full IDE setup — user wants a specific config.
 4. Prompt for any missing fields (main class, Gradle task, npm script, environment variables, working directory).
 5. Write `.idea/runConfigurations/<user-named>.xml`. If a file with that name already exists, confirm before overwriting.
 6. Report the path. Tell the user IntelliJ auto-reloads run configs while the project is open.
+
+## Nested project detection
+
+A cloned repo may contain multiple distinct sub-projects (a monorepo) that benefit from separate IntelliJ modules — e.g., a Spring Boot API in `api/` plus a React UI in `ui/` under one git root. Default behavior is one module per repo (rooted at the repo's top level). Nested detection extends that with an *opt-in* proposal: scan the repo shallowly, surface candidates, ask the user.
+
+### Heuristic — when to flag a sub-directory as a candidate
+
+Scan each cloned repo at **depth ≤ 2** for the following build markers:
+
+| Marker | Hints at |
+|--------|----------|
+| `pom.xml` | Maven project |
+| `build.gradle` / `build.gradle.kts` | Gradle project |
+| `package.json` | Node / TypeScript project |
+| `go.mod` | Go module |
+| `pyproject.toml` / `requirements.txt` | Python project |
+| `Cargo.toml` | Rust crate |
+
+A sub-directory is a **candidate** when:
+- It has at least one marker.
+- The sub-directory is **not** already referenced by the root build file as part of a multi-module setup. Specifically:
+  - Skip if root has `pom.xml` and the sub-dir is listed under `<modules>` (Maven multi-module — IntelliJ handles internally).
+  - Skip if root has `settings.gradle[.kts]` and the sub-dir is listed via `include(...)` (Gradle multi-project — same).
+  - Skip if root `package.json` declares `workspaces` and the sub-dir matches one (npm/Yarn workspaces — same).
+- The sub-directory is **not** an excluded folder per `module.iml.tpl`'s exclude list (`node_modules/`, `target/`, `build/`, `vendor/`, `.venv/`, etc.).
+
+### What to surface to the user
+
+When candidates exist for a repo, **always ask** — never auto-register:
+
+> "`<repo>` looks like it may have nested projects:
+> - `<repo>/api/pom.xml` — Maven (Spring Boot? Java)
+> - `<repo>/ui/package.json` — Node / React
+>
+> Register these as separate IntelliJ modules in addition to the repo-root module? (yes / pick a subset / no — just the repo root)"
+
+Three valid outcomes:
+1. **No additional modules** — keep the repo-root module only. The user already has Maven/Gradle multi-module or workspaces wired up at the root.
+2. **One module per candidate** — write `.idea/modules/<repo>-<subdir>.iml` for each approved sub-project. Naming: `<repo>-<subdir>` (e.g., `gym-tracker-api`, `gym-tracker-ui`) to avoid collisions in `modules.xml`.
+3. **Replace the repo-root module** — rare; only if the user explicitly says they don't want a module at the repo root. Default is to keep it (lets the user navigate top-level files like the README, scripts, docker-compose).
+
+### When to skip the prompt
+
+- `repos.md` declares `type: monorepo` AND has explicit sub-project entries — treat those as authoritative; register matching modules silently and move on. Still mention what was registered in the report.
+- The repo has zero candidates — no prompt needed.
+
+### Naming and grouping for sub-modules
+
+- Module name: `<repo>-<subdir-relative-path-with-dashes>` (e.g., a candidate at `<repo>/services/auth/` becomes module `<repo>-services-auth`).
+- Group: same as the parent repo's group, plus the repo name itself appended — so the IntelliJ Project tool window shows the sub-modules nested under their parent repo. E.g., if the parent repo's group is `gitlab/yazilim.vip/community/projects/gym-tracker`, the sub-module's group is `gitlab/yazilim.vip/community/projects/gym-tracker/gym-tracker`.
+- Excludes: same set as `module.iml.tpl`, but pathed at the sub-directory's URL (`$MODULE_DIR$/../../git-repositories/.../<repo>/<subdir>/...`).
+
+### Cross-references
+
+- The "Run config detection table" still applies — once a sub-module exists, build-marker-based run-config proposals fire against the sub-module's path, not the repo root's.
+- The "Excludes per module" rules in `module.iml.tpl` apply unchanged.
 
 ## Module generation details
 

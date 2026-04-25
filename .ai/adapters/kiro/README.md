@@ -9,12 +9,14 @@ Implements `.ai/enforcement.md` for [Kiro](https://kiro.dev). Generates `.kiro/`
 | **C1** Session-start broadcast | `inclusion: always` steering + `#[[file:]]` live reference to `terminal.md` | `steering/nova.md` | `.kiro/steering/nova.md` |
 | **C2** Per-turn re-injection | Hook with `promptSubmit` trigger, shell-command action | `hooks/prompt-submit.sh` + `hooks/prompt-submit.kiro.hook` | `.kiro/hooks/...` |
 | **C3** Scoped rule activation | `inclusion: fileMatch` steering per registered repo | adapters/IDE procedure generator | `.kiro/steering/<repo>.md` |
+| **C4** Host-environment doctrine | `#[[file:...]]` live reference from `steering/nova.md`; activation gated on the workspace's declared `Host Environments` (see `.ai/workspace/AGENTS.md` and `.ai/onboarding/README.md` step 6). One doctrine file per host. | `intellij-mcp.md` (more as hosts are added) | Pulled inline by `.kiro/steering/nova.md` |
 | S1 Pre-edit gate | *(not yet implemented)* | | |
 | **S2** Focused subagent | Native Kiro IDE subagent (auto-selected or invoked via `/repo-worker`) | `agents/repo-worker.md` | `.kiro/agents/repo-worker.md` |
 
 ## Platform-specific sources of truth
 
 - `terminal.md` — Kiro terminal hang rules. Strict, non-negotiable. Referenced from `steering/nova.md` via `#[[file:...]]` live reference.
+- `intellij-mcp.md` — IDEA MCP capability doctrine for Kiro CLI in IntelliJ terminal. Conditional (gated on declared host); referenced from `steering/nova.md` the same way.
 - `hooks/prompt-submit.sh` — shell script that `cat`s the shared checklist (`.ai/adapters/_shared/checklist.md`).
 
 No Kiro-specific rule text lives in steering or hooks beyond what's in these files. Both reference the shared checklist or platform-specific sources; they do not paraphrase NOVA rules.
