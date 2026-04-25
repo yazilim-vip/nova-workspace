@@ -28,13 +28,13 @@ All `.idea/` files reference paths via macros — never raw absolute paths, so t
 
 | Macro | Resolves to | Used in |
 |-------|-------------|---------|
-| `$PROJECT_DIR$` | Directory containing `.idea/` — the workspace root | `modules.xml`, `vcs.xml`, `runConfigurations/*.xml`, `.iml` when content lives outside the module directory |
-| `$MODULE_DIR$` | Directory containing the `.iml` being parsed | `.iml` files when content root is adjacent to the `.iml` (NOT our case — we put `.iml` under `.idea/modules/`) |
+| `$PROJECT_DIR$` | Directory containing `.idea/` — the workspace root | `modules.xml`, `vcs.xml`, `runConfigurations/*.xml` |
+| `$MODULE_DIR$` | Directory containing the `.iml` being parsed | **`.iml` files — always**. This is the ONLY macro IntelliJ resolves inside `.iml`. |
 | `$USER_HOME$` | User's home directory | Rarely — only for user-global references |
 | `$MAVEN_REPOSITORY$` | Local Maven `~/.m2/repository` | Dependency URLs in Maven-imported modules |
 | `$APPLICATION_CONFIG_DIR$` | IntelliJ's per-install config dir | Almost never in project files |
 
-**Gotcha**: `$MODULE_DIR$` resolves relative to the `.iml` file's directory, **not** to the content root. When our `.iml` lives at `.idea/modules/<repo>.iml` but the content lives at `git-repositories/<platform>/<org>/<repo>/`, always use `$PROJECT_DIR$/...` in URLs — `$MODULE_DIR$` would point at `.idea/modules/` and break content roots.
+**Critical**: inside `.iml` files, IntelliJ only resolves `$MODULE_DIR$`. `$PROJECT_DIR$` is **not** substituted inside `.iml` — IntelliJ will treat the literal string as a non-absolute path, emit a `Watch roots should be absolute: $PROJECT_DIR$/...` warning, and silently drop every module. When `.iml` lives at `.idea/modules/<repo>.iml` and content lives at `git-repositories/<platform>/<org>/<repo>/`, use `$MODULE_DIR$/../../git-repositories/<platform>/<org>/<repo>` — `$MODULE_DIR$` resolves to `.idea/modules/`, so `../..` climbs to the workspace root. `$PROJECT_DIR$` IS valid in `modules.xml`, `vcs.xml`, and `runConfigurations/*.xml`.
 
 ## modules.xml
 
@@ -79,14 +79,14 @@ Per-module config. Defines content roots, source folders, excludes, JDK, and dep
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="WEB_MODULE" version="4">
   <component name="NewModuleRootManager">
-    <content url="file://$PROJECT_DIR$/git-repositories/github/yazilim-vip/gym-tracker">
-      <excludeFolder url="file://$PROJECT_DIR$/git-repositories/github/yazilim-vip/gym-tracker/node_modules" />
-      <excludeFolder url="file://$PROJECT_DIR$/git-repositories/github/yazilim-vip/gym-tracker/build" />
-      <excludeFolder url="file://$PROJECT_DIR$/git-repositories/github/yazilim-vip/gym-tracker/target" />
-      <excludeFolder url="file://$PROJECT_DIR$/git-repositories/github/yazilim-vip/gym-tracker/dist" />
-      <excludeFolder url="file://$PROJECT_DIR$/git-repositories/github/yazilim-vip/gym-tracker/out" />
-      <excludeFolder url="file://$PROJECT_DIR$/git-repositories/github/yazilim-vip/gym-tracker/.gradle" />
-      <excludeFolder url="file://$PROJECT_DIR$/git-repositories/github/yazilim-vip/gym-tracker/.idea" />
+    <content url="file://$MODULE_DIR$/../../git-repositories/github/yazilim-vip/gym-tracker">
+      <excludeFolder url="file://$MODULE_DIR$/../../git-repositories/github/yazilim-vip/gym-tracker/node_modules" />
+      <excludeFolder url="file://$MODULE_DIR$/../../git-repositories/github/yazilim-vip/gym-tracker/build" />
+      <excludeFolder url="file://$MODULE_DIR$/../../git-repositories/github/yazilim-vip/gym-tracker/target" />
+      <excludeFolder url="file://$MODULE_DIR$/../../git-repositories/github/yazilim-vip/gym-tracker/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/../../git-repositories/github/yazilim-vip/gym-tracker/out" />
+      <excludeFolder url="file://$MODULE_DIR$/../../git-repositories/github/yazilim-vip/gym-tracker/.gradle" />
+      <excludeFolder url="file://$MODULE_DIR$/../../git-repositories/github/yazilim-vip/gym-tracker/.idea" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -150,10 +150,10 @@ IntelliJ refuses to load when two modules' content roots overlap. That's why the
 
 Workspace-root module excludes:
 ```xml
-<content url="file://$PROJECT_DIR$">
-  <excludeFolder url="file://$PROJECT_DIR$/git-repositories" />
-  <excludeFolder url="file://$PROJECT_DIR$/.idea" />
-  <excludeFolder url="file://$PROJECT_DIR$/scripts" />
+<content url="file://$MODULE_DIR$/../..">
+  <excludeFolder url="file://$MODULE_DIR$/../../git-repositories" />
+  <excludeFolder url="file://$MODULE_DIR$/../../.idea" />
+  <excludeFolder url="file://$MODULE_DIR$/../../scripts" />
 </content>
 ```
 
