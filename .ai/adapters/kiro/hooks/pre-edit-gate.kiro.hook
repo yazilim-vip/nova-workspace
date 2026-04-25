@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "NOVA pre-edit gate (S1)",
+  "description": "Blocks fs_write under git-repositories/<repo>/ until that repo's AGENTS.md has been read this session. Opt-in. Source of truth: .ai/enforcement.md S1.",
+  "version": "1",
+  "when": {
+    "type": "preToolUse",
+    "matcher": "fs_write"
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "bash .kiro/hooks/pre-edit-gate.sh"
+  }
+}

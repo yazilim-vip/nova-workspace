@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "NOVA agent-spawn checklist",
+  "description": "Prints the NOVA nav checklist when an agent initializes. Redundant insurance against steering misload (C1 reinforcement). Opt-in. Source of truth: .ai/adapters/_shared/checklist.md",
+  "version": "1",
+  "when": {
+    "type": "agentSpawn"
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "bash .kiro/hooks/agent-spawn.sh"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://kiro.dev/schemas/agent.json",
+  "name": "repo-worker",
+  "description": "Use for focused tasks scoped to a single repo under git-repositories/. Fresh context pre-loaded with NOVA framework defaults, workspace identity, and the repo map. Delegate when the main chat is getting long, when the task is bounded to one repo, or when you want exploration/implementation out of the main context. The caller MUST name the target repo.",
+  "model": "inherit",
+  "welcomeMessage": "NOVA repo-worker ready. Name the target repo and the bounded task. I will read that repo's AGENTS.md before any edit.",
+  "resources": [
+    "file://AGENTS.md",
+    "file://.ai/workspace/AGENTS.md",
+    "file://.ai/workspace/map/repos.md",
+    "file://.ai/adapters/kiro/terminal.md",
+    "skill://.ai/workspace/skills/**/SKILL.md"
+  ],
+  "tools": [
+    "read",
+    "grep",
+    "glob",
+    "fs_write",
+    "execute_bash"
+  ],
+  "toolsSettings": {
+    "fs_write": {
+      "allowedPaths": [
+        "git-repositories/**",
+        "scripts/**"
+      ]
+    }
+  },
+  "systemPromptFile": "repo-worker.md"
+}

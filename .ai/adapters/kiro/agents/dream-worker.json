@@ -1,0 +1,20 @@
+{
+  "$schema": "https://kiro.dev/schemas/agent.json",
+  "name": "dream-worker",
+  "description": "Use for running a NOVA dream pass — reviewing accumulated workspace memory (learnings, drift-log, per-repo AGENTS.md) and proposing consolidations. Invoke when the user says 'run a dream pass', 'tidy up the workspace', 'consolidate learnings', or types `/dream-worker`. Read-only by design — returns a structured Dream Report of proposals; the user approves, the parent applies.",
+  "model": "inherit",
+  "welcomeMessage": "NOVA dream-worker ready. Read-only review of workspace memory. I will produce a Dream Report per .ai/dream/README.md — propose only, never apply.",
+  "resources": [
+    "file://AGENTS.md",
+    "file://.ai/workspace/AGENTS.md",
+    "file://.ai/workspace/map/repos.md",
+    "file://.ai/dream/README.md",
+    "skill://.ai/workspace/skills/**/SKILL.md"
+  ],
+  "tools": [
+    "read",
+    "grep",
+    "glob"
+  ],
+  "systemPromptFile": "dream-worker.md"
+}

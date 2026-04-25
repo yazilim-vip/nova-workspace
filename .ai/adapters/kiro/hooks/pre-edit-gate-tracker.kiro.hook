@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "NOVA pre-edit gate read tracker",
+  "description": "Companion to pre-edit-gate.sh. Records reads of git-repositories/<repo>/AGENTS.md so subsequent fs_write under that repo is allowed this session. Opt-in.",
+  "version": "1",
+  "when": {
+    "type": "postToolUse",
+    "matcher": "read"
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "bash .kiro/hooks/pre-edit-gate-tracker.sh"
+  }
+}

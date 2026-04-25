@@ -10,8 +10,8 @@ Implements `.ai/enforcement.md` for [Kiro](https://kiro.dev). Generates `.kiro/`
 | **C2** Per-turn re-injection | Hook with `promptSubmit` trigger, shell-command action | `hooks/prompt-submit.sh` + `hooks/prompt-submit.kiro.hook` | `.kiro/hooks/...` |
 | **C3** Scoped rule activation | `inclusion: fileMatch` steering per registered repo | adapters/IDE procedure generator | `.kiro/steering/<repo>.md` |
 | **C4** Host-environment doctrine | `#[[file:...]]` live reference from `steering/nova.md`; activation gated on the workspace's declared `Host Environments` (see `.ai/workspace/AGENTS.md` and `.ai/onboarding/README.md` step 6). One doctrine file per host. | `intellij-mcp.md` (more as hosts are added) | Pulled inline by `.kiro/steering/nova.md` |
-| S1 Pre-edit gate | *(not yet implemented)* | | |
-| **S2** Focused subagent | Native Kiro IDE subagent (auto-selected or invoked via `/repo-worker`) | `agents/repo-worker.md` | `.kiro/agents/repo-worker.md` |
+| **S1** Pre-edit gate (opt-in) | `preToolUse` hook matching `fs_write` returns `exit 2` to block writes under `git-repositories/<repo>/` until that repo's `AGENTS.md` is read this session. Companion `postToolUse` tracker drops a session marker on AGENTS.md reads. | `hooks/pre-edit-gate.sh` + `pre-edit-gate.kiro.hook` + `pre-edit-gate-tracker.sh` + `pre-edit-gate-tracker.kiro.hook` | `.kiro/hooks/...` (opt-in copy) |
+| **S2** Focused subagent | Native Kiro IDE subagent. JSON config (`agents/<name>.json`) restricts tools, pre-loads scoped resources, and sets per-agent UX. Markdown body (`agents/<name>.md`) holds the system prompt; the JSON points at it via `systemPromptFile`. | `agents/repo-worker.{json,md}`, `agents/dream-worker.{json,md}` | `.kiro/agents/...` |
 
 ## Platform-specific sources of truth
 
@@ -43,24 +43,37 @@ Steering points at `AGENTS.md` and `.ai/` paths — does not reproduce them. The
 
 ## Subagents
 
-### `agents/repo-worker.md`
+Each subagent ships as a **paired** `.json` config + `.md` system prompt. The JSON enforces capabilities the markdown frontmatter cannot — tool restriction, path-scoped `fs_write`, pre-loaded resources via `file://` and `skill://` URIs, welcome message. The markdown holds the prompt body and is referenced from the JSON via `systemPromptFile`.
 
-Generic archetype for tasks scoped to one repo under `git-repositories/`. Pre-loads framework + workspace + repo-map via `#[[file:]]` live refs, then reads the target repo's own `AGENTS.md` as its first action. Fresh Kiro subagent context → zero rot.
+Reference: [Kiro agent config schema](https://kiro.dev/docs/agents) — `tools`, `toolsSettings`, `resources` (with `skill://` for progressive loading), `welcomeMessage`, `keyboardShortcut`, `mcpServers`.
+
+### `agents/repo-worker.{json,md}`
+
+Generic archetype for tasks scoped to one repo under `git-repositories/`. Pre-loads framework + workspace + repo-map + Kiro terminal rules via `file://` resources, plus all workspace skills via `skill://` (progressive). `fs_write` is path-scoped to `git-repositories/**` and `scripts/**` — cannot accidentally write workspace-level files. Reads the target repo's own `AGENTS.md` as its first action. Fresh context → zero rot.
 
 Invoke via auto-selection, `/repo-worker`, or "use the repo-worker subagent to..." in chat.
 
-### `agents/dream-worker.md`
+### `agents/dream-worker.{json,md}`
 
-Memory-consolidation archetype. Tools restricted to `read`, `grep`, `glob`. Reviews `.ai/workspace/learnings/`, `.ai/workspace/drift-log.md`, and per-repo `AGENTS.md` files; returns a structured Dream Report. User-triggered via `/dream-worker` or "use the dream-worker subagent". Full procedure at `.ai/dream/README.md`.
+Memory-consolidation archetype. Tools enforced to `read`, `grep`, `glob` via JSON config — no shell, no edit, no write. Pre-loads framework + workspace + repo map + dream procedure + skills. Reviews `.ai/workspace/learnings/`, `.ai/workspace/drift-log.md`, and per-repo `AGENTS.md` files; returns a structured Dream Report. User-triggered via `/dream-worker` or "use the dream-worker subagent". Full procedure at `.ai/dream/README.md`.
+
+### Adding new agent files
+
+New subagents authored after the adapters procedure last ran will be missing from `.kiro/agents/` until the procedure is re-run. The README's "Regeneration" section names this — surface it to the user when shipping a new archetype.
 
 ## Regeneration
 
 Run the adapters procedure (`.ai/adapters/README.md`). It:
 
 1. Copies `steering/*.md` → `.kiro/steering/`.
-2. Copies `hooks/*.sh` → `.kiro/hooks/`, sets executable.
-3. Copies `hooks/*.kiro.hook` → `.kiro/hooks/`.
-4. Copies `agents/*.md` → `.kiro/agents/`.
-5. Reports what changed.
+2. Copies `hooks/*.sh` → `.kiro/hooks/`, sets executable. **Skips opt-in scripts** (`pre-edit-gate*.sh`, `agent-spawn.sh`) unless the user requested them.
+3. Copies default `hooks/*.kiro.hook` → `.kiro/hooks/`. **Skips opt-in hook configs** by the same rule (`pre-edit-gate*.kiro.hook`, `agent-spawn.kiro.hook`).
+4. Copies `agents/*.md` AND `agents/*.json` → `.kiro/agents/`. The JSON config takes precedence over markdown frontmatter where both exist.
+5. Renders per-repo steering from `templates/repo-steering.md` for each registered, cloned repo (C3).
+6. Reports what changed.
+
+Opt-in artifacts (S1 pre-edit gate, agentSpawn checklist) ship as separate file pairs. Install them by copying the matching `.sh` + `.kiro.hook` pair into `.kiro/hooks/` only when the friction trade-off is worth it (drift log shows the failure mode the hook prevents).
+
+New agent files (`agents/<name>.{json,md}`) added after the procedure last ran require a re-run to appear under `.kiro/agents/`.
 
 Runtime outputs (`.kiro/`) are gitignored. Sources under `.ai/adapters/kiro/` are committed.
