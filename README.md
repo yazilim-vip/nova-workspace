@@ -10,8 +10,15 @@ NOVA is a markdown-based framework built on the [AGENTS.md](https://agents.md) c
 
 - **`AGENTS.md`** — the agent's identity, safety rules, and navigation protocol.
 - **`SOUL.md`** — voice and depth, loaded only when the task demands it.
-- **`.ai/onboarding/`** — framework procedure: guided workspace setup.
-- **`.ai/self-update/`** — framework procedure: deliberate upstream sync.
+- **`.ai/enforcement.md`** — platform-agnostic contract that turns prose rules into deterministic agent behavior (session-start broadcast, per-turn re-injection, scoped activation, optional pre-edit gate, focused subagent).
+- **`.ai/adapters/`** — per-platform implementations of the enforcement contract. Ships [Claude Code](.ai/adapters/claude/README.md) and [Kiro](.ai/adapters/kiro/README.md) today; pluggable for more.
+- **Framework procedures under `.ai/<name>/`** — read on trigger:
+  - `onboarding/` — guided workspace setup.
+  - `self-update/` — deliberate upstream sync.
+  - `adapters/` — generate per-platform steering, hooks, subagents.
+  - `ide/` — IntelliJ multi-module project for the workspace.
+  - `terminal/` — tmux + Neovim + Claude Code stack.
+  - `dream/` — periodic memory consolidation pass over learnings + drift log.
 - **`.ai/project-structure.md`** — NOVA's convention for a single project's AGENTS.md / `.ai/` layout. A reference doc.
 - **`.ai/workspace/`** — the local workspace instance (gitignored; populated during onboarding). **Your skills live here** at `.ai/workspace/skills/<name>/SKILL.md`, in the [agentskills.io](https://agentskills.io) format.
 - **`git-repositories/`** — the clone convention (`<platform>/<group>/<repo>`; gitignored).
@@ -19,6 +26,7 @@ NOVA is a markdown-based framework built on the [AGENTS.md](https://agents.md) c
 **Mental model:**
 - `.ai/<name>/` = NOVA's own procedures (read on trigger).
 - `.ai/*.md` = NOVA's conventions (read when context demands).
+- `.ai/adapters/` = per-platform pointers + hooks + subagents (committed; runtime outputs like `.claude/`, `.kiro/` are gitignored, regenerable).
 - `.ai/workspace/` = yours (local, gitignored). Skills, infra config, learnings — all yours.
 
 NOVA never writes into `.ai/workspace/` upstream and never ships a committed skills folder. Your skills stay local by default.
@@ -27,12 +35,25 @@ NOVA never writes into `.ai/workspace/` upstream and never ships a committed ski
 
 Most agent tooling operates inside a single repo. Real engineering work spans many repos — apps, infra, shared libraries, docs. NOVA sits one level above: it's the thing that tells the agent *which* repo to enter, what conventions it uses, and where your tooling lives.
 
+## Why prose plus enforcement?
+
+LLM compliance with prose rules is probabilistic, and attention to mid-context instructions decays as the conversation grows. NOVA's `AGENTS.md` is the prose; `.ai/adapters/` is what makes it stick:
+
+- **Session-start broadcast** — workspace identity + nav protocol injected at position 0 (Claude `@`-imports, Kiro `inclusion: always` steering).
+- **Per-turn re-injection** — a 5-line checklist re-injected on every user prompt via platform hooks, refreshing attention at the end of context where it's strongest.
+- **Scoped activation** — entering `git-repositories/<repo>/` auto-loads that repo's `AGENTS.md` (Kiro `fileMatch`; on Claude, delegated to the `repo-worker` subagent).
+- **Optional pre-edit gate** — `fs_write` under a repo blocks until that repo's `AGENTS.md` was read this session (Kiro `preToolUse` hook; opt-in).
+- **Focused subagents** — `repo-worker` and `dream-worker` ship as fresh-context archetypes with the rulebook pre-walked at definition time.
+
+The full contract lives at [.ai/enforcement.md](.ai/enforcement.md). Adapters are pointers, never copies — every rule still has one source of truth.
+
 ## Getting started
 
 1. Clone this repo into a new workspace directory.
-2. Open the workspace in an AGENTS.md-aware agent (Claude Code, Cursor, Codex, etc.).
+2. Open the workspace in your agent (Claude Code, Kiro, Cursor, Codex, etc.).
 3. Say **"set up my workspace"** — NOVA will guide you through onboarding.
-4. (Optional) Clone your project repos into `git-repositories/` following the `<platform>/<group>/<repo>` convention.
+4. Say **"set up the \<platform> adapter"** to generate platform-native steering, hooks, and subagents (`.claude/`, `.kiro/`).
+5. (Optional) Clone your project repos into `git-repositories/` following the `<platform>/<group>/<repo>` convention.
 
 Manual alternative: copy `.ai/onboarding/assets/map/repos.md` → `.ai/workspace/map/repos.md` and `.ai/onboarding/assets/infra.md` → `.ai/workspace/infra.md`, then fill them in yourself.
 
