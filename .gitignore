@@ -30,4 +30,5 @@ Thumbs.db
 !.ai/workspace/**/.gitkeep
 
 # Personal notes vault (per-machine, not shared — see .ai/notes/README.md)
-notes/
+# Leading slash anchors to workspace root so the rule does not also match .ai/notes/.
+/notes/

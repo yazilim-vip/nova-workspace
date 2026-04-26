@@ -8,18 +8,18 @@ Engineers accumulate working memory the codebase can't hold: bug investigations 
 
 ## Core principle
 
-**Committed conventions, gitignored content, agent-driven workflow.**
+**Committed conventions, gitignored content, agent-driven workflow, viewer-agnostic.**
 
 - The conventions in this file are committed; every NOVA workspace gets the same shape.
 - The vault itself (`notes/` at workspace root) is gitignored — personal, machine-local.
 - The agent owns capture, filing, search, and consolidation. The user asks; the agent acts.
-- Obsidian is the human-facing surface for browse, `[[wikilink]]` navigation, backlinks, graph view, and attachment paste. It is not the workflow driver — the agent is.
+- The vault is plain markdown + YAML frontmatter — readable in any editor. **Viewer choice is opt-in** and lives under `.ai/notes/adapters/<viewer>/`. See § Viewers below.
 
-This split means workspace push/pull keeps the methodology in sync across machines while content stays per-machine.
+This split means workspace push/pull keeps the methodology in sync across machines while content stays per-machine, and switching viewers (or using none) doesn't break the contract.
 
 ## Anti-duplication rule
 
-If a rule applies to every NOVA agent, it belongs in root `AGENTS.md`. If it applies to every notes vault, it belongs here. Agent-specific shell-command JSON or CLI invocations live under `.ai/adapters/<agent>/` — never in this file.
+If a rule applies to every NOVA agent, it belongs in root `AGENTS.md`. If it applies to every notes vault, it belongs here. Viewer-specific config (Obsidian plugins, Foam settings, etc.) lives under `.ai/notes/adapters/<viewer>/` — never in this file. Agent-specific shell-command JSON or CLI invocations live under `.ai/adapters/<agent>/`.
 
 ## When to trigger
 
@@ -27,7 +27,8 @@ If a rule applies to every NOVA agent, it belongs in root `AGENTS.md`. If it app
 - Any agent capture verb the user uses (see § Agent capture vocabulary): "capture to inbox …", "log to daily …", "process inbox", "what do I know about …"
 - "open today", "new bug ticket …"
 - Editing under `notes/` at the workspace root
-- "wire shell-command hotkeys for notes"
+
+For viewer setup ("set up Obsidian for my notes", "wire shell-command hotkeys"), the agent reads the matching adapter under `.ai/notes/adapters/<viewer>/`.
 
 ## Distinct from other knowledge stores
 
@@ -49,7 +50,6 @@ If a piece of knowledge is reusable agent context, it does not belong in `notes/
 
 ```
 notes/
-├── .obsidian/                      # vault config (gitignored, but lives in vault)
 ├── README.md                       # vault entry point — points back at this procedure
 ├── inbox/                          # quick captures, unprocessed
 ├── daily/                          # YYYY-MM-DD.md
@@ -57,9 +57,10 @@ notes/
 ├── areas/                          # ongoing responsibilities
 ├── resources/                      # topics, references
 │   └── templates/                  # reusable note templates
-├── archive/                        # done/dormant — moved from above
-└── maps/                           # MOCs (Maps of Content) — curated index notes
+└── archive/                        # done/dormant — moved from above
 ```
+
+Viewer-specific config directories (e.g. `.obsidian/` for Obsidian) live inside `notes/` but are scaffolded by the matching viewer adapter, not by this procedure.
 
 PARA semantics:
 
@@ -72,7 +73,7 @@ PARA semantics:
 
 - Notes: kebab-case, descriptive — `bifrost-retry-policy.md`, **not** `2026-04-27-bifrost.md`. Date goes in frontmatter.
 - Daily notes: `YYYY-MM-DD.md` in `daily/`.
-- Attachment-heavy notes: promote to a folder named after the note. Folder contains the note as `<folder-name>.md` and attachments under `_assets/`.
+- Folder notes: see § Folder notes below.
 
 ## Frontmatter schema
 
@@ -89,30 +90,40 @@ links: ["[[other-note]]"]                      # optional, agent maintains
 ---
 ```
 
+`[[wikilink]]` syntax is plain markdown extension — universally supported by Obsidian, Foam, Logseq, and most modern markdown viewers. The contract uses it; viewer adapters may layer extra link forms (`[[note|alias]]`, `![[embed]]`) on top.
+
 Tag conventions:
 
 - `topic/<area>` — kubernetes, llm, observability
 - `project/<repo-or-name>` — chart-ai, payment-vip, gym-tracker
 - `context/<work|personal>` — keep contexts distinguishable even when vaults are physically separate (defense in depth)
 
-## Promote-to-folder pattern (attachments)
+## Folder notes
 
-Quick text-only notes stay flat `.md`. Anything with attachments — bug tickets, design docs, meeting notes with diagrams — gets promoted:
+Any folder may *be* a note. Convention:
 
 ```
-notes/projects/
-├── chart-ai-migration.md            # flat — no attachments
-└── bug-PAY-1234/                    # folder — has attachments
-    ├── bug-PAY-1234.md              # the note (frontmatter + body)
-    └── _assets/
-        ├── error-screenshot.png
-        ├── failed-request.json
-        └── server.log
+notes/projects/chart-ai/
+├── chart-ai.md                # the folder's own note (frontmatter + body)
+├── _assets/                   # attachments
+├── migration-q2.md            # sub-notes
+└── retry-policy-spike.md
 ```
+
+The folder-note file is named after its containing folder (`<folder>/<folder>.md`). This is plain markdown — works in any editor. Some viewers (Obsidian's Folder Notes plugin) add a click-to-open UX on top; the file layout itself is universal.
+
+Use folder notes for:
+
+- **Project hubs** — `projects/chart-ai/chart-ai.md` is the project overview, sub-investigations are siblings.
+- **Area runbooks** — `areas/oncall/oncall.md` is the running runbook, dated entries below.
+- **Topic MOCs** — `resources/llm/llm.md` is the topic map, refs and notes nested under it.
+- **Attachment-heavy notes** — `projects/bug-PAY-1234/bug-PAY-1234.md` with screenshots/logs under `_assets/`.
+
+Quick text-only notes stay flat `.md`. Promote to folder when a note grows attachments or sub-notes.
 
 In the note body, reference attachments via:
 
-- `![[error-screenshot.png]]` — image renders inline.
+- `![[error-screenshot.png]]` — image renders inline (in viewers that support embeds).
 - `[[failed-request.json]]` — link, opens externally.
 
 ## Agent capture vocabulary
@@ -131,56 +142,19 @@ The agent recognizes the following intents from the user. Phrasing is flexible; 
 
 The agent **never silently overwrites** existing notes — edits with a visible diff or appends.
 
-## Obsidian setup
+## Viewers
 
-### Required community plugins
+Viewer support is opt-in and isolated under `.ai/notes/adapters/<viewer>/`, mirroring the per-platform pattern of `.ai/adapters/<coding-agent>/`. The vault itself is plain markdown and works without any viewer.
 
-| Plugin | Repo | Why |
-|---|---|---|
-| Terminal | `polyipseity/obsidian-terminal` | Agent CLI inside the vault — primary invocation surface while in Obsidian. |
-| Shell commands | `taitava/obsidian-shellcommands` | Bind agent actions to hotkeys/palette with note context (`{{selection}}`, `{{file_path}}`, `{{vault_path}}`) as variables. |
+| Viewer | Adapter | Status |
+|--------|---------|--------|
+| Obsidian | `.ai/notes/adapters/obsidian/` | supported |
 
-Enable: Settings → Community plugins → turn off Restricted mode → install + enable both. Obsidian does not script community-plugin installs; this is a one-time manual step per machine.
+To set up a viewer the user says "set up Obsidian for my notes" (or the equivalent for another viewer). The agent reads the matching adapter and scaffolds viewer-specific config (e.g. `notes/.obsidian/`). The viewer's installable software (Obsidian itself, plugins) is a one-time manual install per machine.
 
-### Skip these (agent-driven, not user-driven)
+To use no viewer at all, skip this section. The vault is fully usable with `nvim`, VS Code, `bat`, `grep`, or any markdown tool.
 
-The plugin ecosystem is built around manual workflows the agent now handles. Avoid:
-
-- **Daily Notes core plugin, Templater, QuickAdd, Periodic Notes, Tasks** — automation belongs to the agent. Manual templating tools add friction without value and create a second source of truth.
-- **Copilot for Obsidian, Text Generator, Smart Connections** — these bypass the user's agent with direct LLM API calls. The point is to keep one agent driving, not run a parallel one.
-- **Obsidian Sync** — vaults are intentionally per-machine.
-
-### Vault settings
-
-Pre-written into `notes/.obsidian/app.json` during scaffold; user can adjust later via Obsidian UI.
-
-| Setting path | Value | Reason |
-|---|---|---|
-| Files & Links → Default location for new attachments | **In subfolder under current folder**, name `_assets` | Promote-to-folder pattern works automatically on paste/drop. |
-| Files & Links → Use `[[Wikilinks]]` | **On** | Agent uses wikilinks; consistent linkage. |
-| Files & Links → New link format | **Shortest path when possible** | Cleaner refs across nested folders. |
-| Files & Links → Detect all file extensions | **On** | `.json`, `.log`, `.txt`, `.xml` show as linkable in graph. |
-| Editor → Show frontmatter | **On** | Frontmatter is load-bearing; should be visible. |
-
-### Terminal plugin config
-
-- **Shell**: `/bin/zsh -l` — `-l` forces a login shell so `.zshrc` / `.zprofile` source and the agent CLI resolves on PATH.
-- **Working directory**: vault root.
-- **Why**: Obsidian launches with a minimal env. Without `-l`, your shell's PATH and tooling are not loaded, and the agent CLI fails to resolve.
-
-### Shell commands plugin patterns
-
-The plugin runs shell invocations bound to hotkeys/palette entries. The exact CLI is **agent-specific** — the agent generates the JSON for itself when the user asks ("wire the shell-command hotkeys"). Patterns are platform-agnostic:
-
-| Pattern | Note context | Behavior |
-|---|---|---|
-| Capture selection to inbox | `{{selection}}` | New `notes/inbox/...` file with the selection as body. |
-| Append selection to today's daily | `{{selection}}` | Append to `notes/daily/YYYY-MM-DD.md`. |
-| Send selection to agent (in-place) | `{{selection}}` | Agent processes selection; output replaces selection or is appended below. |
-| Process current note | `{{file_path}}` | Agent reads the file, applies a transform (summarize, file, extract action items). |
-| Process inbox | none | Agent runs the inbox-processing flow. |
-
-When asked to wire these up, the agent generates the matching JSON for `taitava/obsidian-shellcommands` using its own CLI and the user's preferred hotkeys.
+See `.ai/notes/adapters/README.md` for the index.
 
 ## Templates
 
@@ -198,24 +172,20 @@ Concrete template bodies are written by the scaffold step and live in the vault,
 - **Don't store cross-project agent knowledge here.** That belongs in `.ai/workspace/learnings/` or a project's `AGENTS.md`.
 - **Don't manually create note files for capture.** Use the agent capture vocabulary so frontmatter and naming stay consistent.
 - **Don't commit `notes/`.** Gitignored for a reason — personal, machine-local.
-- **Don't rely on Obsidian QoL plugins** (Daily Notes, Templater, Tasks) — those are agent responsibilities; using both creates two sources of truth.
+- **Don't put viewer-specific rules in this file.** They go under `.ai/notes/adapters/<viewer>/`.
 
 ## Scaffold (what the agent does when invoked)
 
-1. Add `notes/` to workspace `.gitignore` if missing (preserve structure pattern: line near `scripts/`).
+1. Add `notes/` to workspace `.gitignore` if missing.
 2. Create the directory tree per § Folder layout.
 3. Write `notes/README.md` (vault-internal entry point) with a brief orientation pointing back at this file.
 4. Write the three template files under `notes/resources/templates/` per § Templates.
-5. Write `notes/.obsidian/app.json`, `core-plugins.json`, and `community-plugins.json` with the settings in § Obsidian setup. (Plugin code itself must be installed by the user via Obsidian UI; the JSON list is a reference.)
-6. Print the manual checklist for the user:
-   - Install community plugins (Terminal, Shell commands) via Obsidian UI.
-   - Configure Terminal plugin: `/bin/zsh -l`, working dir = vault root.
-   - Optionally ask the agent to "wire the shell-command hotkeys" for the catalog of patterns.
-
-The agent does not assume the user wants Obsidian opened automatically — it leaves that to the user.
+5. Ask the user whether they want a viewer (Obsidian, Foam, etc.) or none. If yes, run the matching adapter's scaffold. If no, stop here.
+6. Print a brief "you're done" message including the agent's capture vocabulary so the user knows how to start using it.
 
 ## Cross-references
 
 - Root `AGENTS.md` — Framework Procedures table includes a row pointing here.
+- `.ai/notes/adapters/README.md` — viewer adapter index.
 - `.ai/workspace/learnings/` — agent-consumed cross-project knowledge (different audience).
 - `.ai/adapters/<agent>/` — where agent-specific shell-command JSON belongs if a workspace pre-bakes it (otherwise the agent generates on demand).
