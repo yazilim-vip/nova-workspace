@@ -28,3 +28,6 @@ Thumbs.db
 # Workspace instance (dynamic, not shared — preserve structure, ignore contents)
 .ai/workspace/**
 !.ai/workspace/**/.gitkeep
+
+# Personal notes vault (per-machine, not shared — see .ai/notes/README.md)
+notes/
