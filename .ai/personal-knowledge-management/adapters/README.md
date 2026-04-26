@@ -1,6 +1,6 @@
 # Notes — viewer adapters
 
-Per-viewer implementations of the notes vault contract (`.ai/notes/README.md`). Same shape as `.ai/adapters/<coding-agent>/`: the contract is tool-neutral; adapters are opt-in per-viewer specifics.
+Per-viewer implementations of the notes vault contract (`.ai/personal-knowledge-management/README.md`). Same shape as `.ai/adapters/<coding-agent>/`: the contract is tool-neutral; adapters are opt-in per-viewer specifics.
 
 ## Why adapters
 
@@ -10,7 +10,7 @@ Adapters keep the contract clean and make viewer choice a per-developer, per-mac
 
 ## Anti-duplication rule
 
-If a rule applies to every notes vault, it belongs in `.ai/notes/README.md`. If it applies only to one viewer, it belongs under `.ai/notes/adapters/<viewer>/`. Adapters reference the contract; they never restate or contradict it.
+If a rule applies to every notes vault, it belongs in `.ai/personal-knowledge-management/README.md`. If it applies only to one viewer, it belongs under `.ai/personal-knowledge-management/adapters/<viewer>/`. Adapters reference the contract; they never restate or contradict it.
 
 ## Activation
 
@@ -34,7 +34,7 @@ To use no viewer, skip this directory entirely. The vault is fully usable as pla
 
 To add Foam, Logseq, plain-text, or any other viewer:
 
-1. Create `.ai/notes/adapters/<viewer>/README.md`.
+1. Create `.ai/personal-knowledge-management/adapters/<viewer>/README.md`.
 2. Document: required installs, recommended config, vault settings file paths, manual one-time-per-machine steps, anti-patterns specific to this viewer.
 3. Add a row to the Supported viewers table above.
 4. Reference the vault contract — never restate it.

@@ -13,13 +13,13 @@ Engineers accumulate working memory the codebase can't hold: bug investigations 
 - The conventions in this file are committed; every NOVA workspace gets the same shape.
 - The vault itself (`notes/` at workspace root) is gitignored — personal, machine-local.
 - The agent owns capture, filing, search, and consolidation. The user asks; the agent acts.
-- The vault is plain markdown + YAML frontmatter — readable in any editor. **Viewer choice is opt-in** and lives under `.ai/notes/adapters/<viewer>/`. See § Viewers below.
+- The vault is plain markdown + YAML frontmatter — readable in any editor. **Viewer choice is opt-in** and lives under `.ai/personal-knowledge-management/adapters/<viewer>/`. See § Viewers below.
 
 This split means workspace push/pull keeps the methodology in sync across machines while content stays per-machine, and switching viewers (or using none) doesn't break the contract.
 
 ## Anti-duplication rule
 
-If a rule applies to every NOVA agent, it belongs in root `AGENTS.md`. If it applies to every notes vault, it belongs here. Viewer-specific config (Obsidian plugins, Foam settings, etc.) lives under `.ai/notes/adapters/<viewer>/` — never in this file. Agent-specific shell-command JSON or CLI invocations live under `.ai/adapters/<agent>/`.
+If a rule applies to every NOVA agent, it belongs in root `AGENTS.md`. If it applies to every notes vault, it belongs here. Viewer-specific config (Obsidian plugins, Foam settings, etc.) lives under `.ai/personal-knowledge-management/adapters/<viewer>/` — never in this file. Agent-specific shell-command JSON or CLI invocations live under `.ai/adapters/<agent>/`.
 
 ## When to trigger
 
@@ -28,7 +28,7 @@ If a rule applies to every NOVA agent, it belongs in root `AGENTS.md`. If it app
 - "open today", "new bug ticket …"
 - Editing under `notes/` at the workspace root
 
-For viewer setup ("set up Obsidian for my notes", "wire shell-command hotkeys"), the agent reads the matching adapter under `.ai/notes/adapters/<viewer>/`.
+For viewer setup ("set up Obsidian for my notes", "wire shell-command hotkeys"), the agent reads the matching adapter under `.ai/personal-knowledge-management/adapters/<viewer>/`.
 
 ## Distinct from other knowledge stores
 
@@ -144,17 +144,17 @@ The agent **never silently overwrites** existing notes — edits with a visible 
 
 ## Viewers
 
-Viewer support is opt-in and isolated under `.ai/notes/adapters/<viewer>/`, mirroring the per-platform pattern of `.ai/adapters/<coding-agent>/`. The vault itself is plain markdown and works without any viewer.
+Viewer support is opt-in and isolated under `.ai/personal-knowledge-management/adapters/<viewer>/`, mirroring the per-platform pattern of `.ai/adapters/<coding-agent>/`. The vault itself is plain markdown and works without any viewer.
 
 | Viewer | Adapter | Status |
 |--------|---------|--------|
-| Obsidian | `.ai/notes/adapters/obsidian/` | supported |
+| Obsidian | `.ai/personal-knowledge-management/adapters/obsidian/` | supported |
 
 To set up a viewer the user says "set up Obsidian for my notes" (or the equivalent for another viewer). The agent reads the matching adapter and scaffolds viewer-specific config (e.g. `notes/.obsidian/`). The viewer's installable software (Obsidian itself, plugins) is a one-time manual install per machine.
 
 To use no viewer at all, skip this section. The vault is fully usable with `nvim`, VS Code, `bat`, `grep`, or any markdown tool.
 
-See `.ai/notes/adapters/README.md` for the index.
+See `.ai/personal-knowledge-management/adapters/README.md` for the index.
 
 ## Templates
 
@@ -172,7 +172,7 @@ Concrete template bodies are written by the scaffold step and live in the vault,
 - **Don't store cross-project agent knowledge here.** That belongs in `.ai/workspace/learnings/` or a project's `AGENTS.md`.
 - **Don't manually create note files for capture.** Use the agent capture vocabulary so frontmatter and naming stay consistent.
 - **Don't commit `notes/`.** Gitignored for a reason — personal, machine-local.
-- **Don't put viewer-specific rules in this file.** They go under `.ai/notes/adapters/<viewer>/`.
+- **Don't put viewer-specific rules in this file.** They go under `.ai/personal-knowledge-management/adapters/<viewer>/`.
 
 ## Scaffold (what the agent does when invoked)
 
@@ -186,6 +186,6 @@ Concrete template bodies are written by the scaffold step and live in the vault,
 ## Cross-references
 
 - Root `AGENTS.md` — Framework Procedures table includes a row pointing here.
-- `.ai/notes/adapters/README.md` — viewer adapter index.
+- `.ai/personal-knowledge-management/adapters/README.md` — viewer adapter index.
 - `.ai/workspace/learnings/` — agent-consumed cross-project knowledge (different audience).
 - `.ai/adapters/<agent>/` — where agent-specific shell-command JSON belongs if a workspace pre-bakes it (otherwise the agent generates on demand).

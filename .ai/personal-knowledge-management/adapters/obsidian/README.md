@@ -1,8 +1,8 @@
 # Notes — Obsidian adapter
 
-Obsidian-specific setup for the `notes/` vault contract (`.ai/notes/README.md`). This adapter owns: required Obsidian plugins, vault settings, terminal/shell-commands wiring, and the click-to-open Folder Notes UX.
+Obsidian-specific setup for the `notes/` vault contract (`.ai/personal-knowledge-management/README.md`). This adapter owns: required Obsidian plugins, vault settings, terminal/shell-commands wiring, and the click-to-open Folder Notes UX.
 
-> **Anti-duplication.** This file owns *what's specific to Obsidian*. The vault layout (PARA, frontmatter schema, folder-notes convention, capture vocabulary) lives in `.ai/notes/README.md` — never restated here.
+> **Anti-duplication.** This file owns *what's specific to Obsidian*. The vault layout (PARA, frontmatter schema, folder-notes convention, capture vocabulary) lives in `.ai/personal-knowledge-management/README.md` — never restated here.
 
 ## Why Obsidian
 
@@ -82,7 +82,7 @@ When asked to wire these up, the agent generates the matching JSON for `taitava/
 
 ## Obsidian-flavored extensions to the contract's link syntax
 
-The contract (`.ai/notes/README.md` § Frontmatter schema) uses plain `[[wikilink]]`. Obsidian additionally supports — and the agent may emit when filing into an Obsidian vault:
+The contract (`.ai/personal-knowledge-management/README.md` § Frontmatter schema) uses plain `[[wikilink]]`. Obsidian additionally supports — and the agent may emit when filing into an Obsidian vault:
 
 - `[[note|alias]]` — display alias for the link.
 - `![[note]]` — transclude/embed another note inline.
@@ -115,8 +115,8 @@ The agent does not assume the user wants Obsidian opened automatically — it le
 
 ## Cross-references
 
-- `.ai/notes/README.md` — vault contract (PARA, frontmatter, folder notes, capture vocabulary). This adapter implements its viewer-specific surface.
-- `.ai/notes/adapters/README.md` — viewer adapter index.
+- `.ai/personal-knowledge-management/README.md` — vault contract (PARA, frontmatter, folder notes, capture vocabulary). This adapter implements its viewer-specific surface.
+- `.ai/personal-knowledge-management/adapters/README.md` — viewer adapter index.
 - [Obsidian Folder Notes plugin (xpgo)](https://github.com/xpgo/obsidian-folder-note-plugin)
 - [polyipseity/obsidian-terminal](https://github.com/polyipseity/obsidian-terminal)
 - [taitava/obsidian-shellcommands](https://github.com/Taitava/obsidian-shellcommands)
