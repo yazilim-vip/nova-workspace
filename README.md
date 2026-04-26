@@ -16,8 +16,8 @@ NOVA is a markdown-based framework built on the [AGENTS.md](https://agents.md) c
   - `onboarding/` — guided workspace setup.
   - `self-update/` — deliberate upstream sync.
   - `adapters/` — generate per-platform steering, hooks, subagents.
-  - `ide/` — IntelliJ multi-module project for the workspace.
-  - `terminal/` — tmux + Neovim + Claude Code stack.
+  - `ide/` — editor setup. IntelliJ multi-module project; Neovim with `claudecode.nvim` MCP bridge.
+  - `terminal/` — terminal multiplexer (tmux) and host-emulator settings Claude requires.
   - `dream/` — periodic memory consolidation pass over learnings + drift log.
 - **`.ai/project-structure.md`** — NOVA's convention for a single project's AGENTS.md / `.ai/` layout. A reference doc.
 - **`.ai/workspace/`** — the local workspace instance (gitignored; populated during onboarding). **Your skills live here** at `.ai/workspace/skills/<name>/SKILL.md`, in the [agentskills.io](https://agentskills.io) format.

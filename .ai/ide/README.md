@@ -24,6 +24,7 @@ If a rule applies to every NOVA agent, it belongs in `AGENTS.md`. If it applies 
 | Platform | Subdirectory | Output | What it generates |
 |----------|-------------|--------|-------------------|
 | IntelliJ IDEA | `.ai/ide/intellij/` | `.idea/` at workspace root | `modules.xml`, `.iml` per repo, `vcs.xml`, `misc.xml`, `encodings.xml`, `runConfigurations/` |
+| Neovim | `.ai/ide/neovim/` | _(none — configs live in `~/.config/nvim/`)_ | Install recipe for `vim.pack` + `claudecode.nvim` + `snacks.nvim` + fzf-lua/yazi/lazygit. Composes with `.ai/terminal/tmux/`. |
 
 More platforms get added to the table as they're supported.
 
@@ -32,6 +33,7 @@ More platforms get added to the table as they're supported.
 - "set up intellij", "generate idea config", "create intellij modules for my repos"
 - "add <repo> as an intellij module", "register my repos in intellij"
 - "create a run configuration for <module>", "add a spring boot run config for chart-ai"
+- "set up neovim", "set up nvim with claude", "integrate claudecode.nvim", "set up my editor"
 - User opens the workspace in IntelliJ and asks why the repos aren't showing in the Project tool window
 
 ## Procedure entry points

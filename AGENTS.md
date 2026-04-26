@@ -55,9 +55,10 @@ These are NOT skills. They're how the framework configures and maintains itself.
 | onboarding | `.ai/onboarding/README.md` | First session, missing workspace files, "set up my workspace", "onboard me" |
 | self-update | `.ai/self-update/README.md` | "sync with upstream", "pull NOVA updates", reviewing upstream changes before merge |
 | adapters | `.ai/adapters/README.md` | "set up kiro adapter", "generate steering for <ide>", host agent not reading `AGENTS.md` |
-| ide | `.ai/ide/README.md` | "set up intellij", "generate idea config", "register repos as intellij modules", "add run configuration for <module>" |
-| terminal | `.ai/terminal/README.md` | "set up tmux", "set up my terminal", "I want a terminal IDE", "integrate Claude Code with neovim/tmux" |
+| ide | `.ai/ide/README.md` | "set up intellij", "generate idea config", "register repos as intellij modules", "add run configuration for <module>", "set up neovim", "integrate claudecode.nvim" |
+| terminal | `.ai/terminal/README.md` | "set up tmux", "set up my terminal", "I want a terminal IDE", "Shift+Enter doesn't work in Claude" |
 | dream | `.ai/dream/README.md` | "run a dream pass", "tidy up the workspace", "consolidate learnings", `/dream`, drift-log review |
+| notes | `.ai/notes/README.md` | "set up notes vault", "scaffold my second brain", capture verbs ("capture to inbox", "log to daily", "process inbox"), "what do I know about …", "new bug ticket …", editing under `notes/` |
 
 ## Conventions
 
