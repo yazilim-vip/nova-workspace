@@ -121,6 +121,8 @@ Use folder notes for:
 
 Quick text-only notes stay flat `.md`. Promote to folder when a note grows attachments or sub-notes.
 
+> **Viewer override.** When the Obsidian adapter is active, this rule flips: **every note is a folder note**, even quick captures. The Folder Notes plugin makes the cost zero and attachment paste lands in the right place automatically. See `.ai/personal-knowledge-management/adapters/obsidian/README.md` § "Strong rule: every note is a folder note".
+
 In the note body, reference attachments via:
 
 - `![[error-screenshot.png]]` — image renders inline (in viewers that support embeds).
