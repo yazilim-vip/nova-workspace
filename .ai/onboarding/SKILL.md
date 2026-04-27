@@ -1,6 +1,11 @@
+---
+name: nova-onboarding
+description: Guide the user through setting up their local NOVA workspace instance — workspace identity, persona overrides, repository map, infra config. Trigger on first session, missing `.ai/workspace/.initialized`, or when the user says "set up my workspace", "onboard me", or "set up this workspace".
+---
+
 # Workspace Onboarding
 
-Framework procedure — read when a user joins a fresh workspace or asks to set things up. Not a skill; it's machinery the framework uses to get itself configured.
+Framework skill — gets a fresh NOVA workspace configured for the local user.
 
 Guide the user through setting up their local workspace instance via conversation. At the end, generate the workspace instance files from their answers.
 

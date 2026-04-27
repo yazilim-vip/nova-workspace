@@ -1,6 +1,11 @@
+---
+name: nova-personal-knowledge-management
+description: Set up, capture into, or organize the user's personal knowledge vault under `notes/`. Trigger when the user says "set up notes vault", "scaffold my second brain", capture verbs ("capture to inbox", "log to daily", "process inbox"), "what do I know about …", "new bug ticket …", or when editing under `notes/`. Viewer setup ("set up Obsidian for my notes") routes to `.ai/personal-knowledge-management/adapters/<viewer>/README.md`.
+---
+
 # Notes
 
-Framework procedure — read when the user asks to set up, capture into, or organize their personal knowledge vault. Not a skill.
+Framework skill — manages the user's personal knowledge vault: capture, organize, search. Vault is gitignored under `notes/`; viewer-specific overrides live in `adapters/<viewer>/`.
 
 ## Why this exists
 

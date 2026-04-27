@@ -1,6 +1,11 @@
+---
+name: nova-dream
+description: Run a NOVA dream pass — review accumulated workspace memory (learnings, drift-log, per-repo AGENTS.md) and propose consolidations. Trigger when the user says "run a dream pass", "tidy up the workspace", "consolidate learnings", or types `/dream`.
+---
+
 # Dream
 
-Framework procedure — read when the user asks to run a dream pass, tidy up NOVA memory, or consolidate learnings. Not a skill.
+Framework skill — periodic memory consolidation. Reviews accumulated learnings/drift/AGENTS.md and returns a structured Dream Report. Read-only; user approves before any apply.
 
 ## Why this exists
 

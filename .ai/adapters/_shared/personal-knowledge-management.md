@@ -26,7 +26,7 @@ These are the only triggers that route work through the PKM contract. Do not fil
 
 Before taking any other action:
 
-1. **Read the contract:** `.ai/personal-knowledge-management/README.md`. It owns vault layout (PARA), naming, frontmatter schema, folder-notes layout, capture vocabulary behaviors. Do not infer these — read them.
+1. **Read the contract:** `.ai/personal-knowledge-management/SKILL.md`. It owns vault layout (PARA), naming, frontmatter schema, folder-notes layout, capture vocabulary behaviors. Do not infer these — read them.
 2. **Detect viewer:** check whether `notes/.obsidian/` exists at the workspace root (`Bash` `test -d notes/.obsidian` or equivalent). If yes, also read `.ai/personal-knowledge-management/adapters/obsidian/README.md` — its **strong rule "every note is a folder note"** overrides the contract's flat-by-default preference.
 3. **Detect vault presence:** if the trigger is a capture/scaffold verb but `notes/` does not exist yet, do **not** start writing — surface this to the user and offer to scaffold per the contract first.
 4. **Check workspace AGENTS.md:** workspace overrides may add or restrict viewers; respect declared viewers.
@@ -61,6 +61,6 @@ The first action is always *read first, write second*. Cold sessions especially.
 
 ## Cross-references
 
-- `.ai/personal-knowledge-management/README.md` — vault contract.
+- `.ai/personal-knowledge-management/SKILL.md` — vault contract.
 - `.ai/personal-knowledge-management/adapters/<viewer>/README.md` — viewer-specific overrides.
 - `AGENTS.md` § Framework Procedures — table row for `personal-knowledge-management`.

@@ -95,7 +95,7 @@ If you've forked NOVA, sync deliberately — don't blind-merge:
 git remote add upstream https://github.com/yazilim-vip/nova-workspace.git
 ```
 
-Then ask your agent to "sync with upstream". It'll follow the flow in [.ai/self-update/README.md](.ai/self-update/README.md): fetch, classify each change, surface conflicts, apply or skip with reasons recorded.
+Then ask your agent to "sync with upstream". It'll follow the flow in [.ai/self-update/SKILL.md](.ai/self-update/SKILL.md): fetch, classify each change, surface conflicts, apply or skip with reasons recorded.
 
 ## Contributing upstream
 

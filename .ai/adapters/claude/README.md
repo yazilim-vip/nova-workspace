@@ -1,6 +1,6 @@
 # Claude Code Adapter
 
-Implements `.ai/enforcement.md` for [Claude Code](https://code.claude.com). Generates `.claude/` at the workspace root — gitignored, per-developer, regenerable by the adapters procedure (`.ai/adapters/README.md`).
+Implements `.ai/enforcement.md` for [Claude Code](https://code.claude.com). Generates `.claude/` at the workspace root — gitignored, per-developer, regenerable by the adapters procedure (`.ai/adapters/SKILL.md`).
 
 ## Capability mapping
 
@@ -10,6 +10,7 @@ Implements `.ai/enforcement.md` for [Claude Code](https://code.claude.com). Gene
 | **C2** Per-turn re-injection | `UserPromptSubmit` hook | `hooks/user-prompt-submit.sh` | `.claude/hooks/user-prompt-submit.sh` |
 | **C3** Scoped rule activation | *Not implemented in the main agent.* Claude Code's only viable mechanism (a subdir `CLAUDE.md` shim) requires writing into someone else's git tree, which NOVA refuses to do. Delegated entirely to **S2** — the `repo-worker` subagent — whose system prompt makes "read the named repo's `AGENTS.md`" its first action. | — | — |
 | **C5** PKM agent doctrine | `@`-imported always-on rules: trigger recognition for capture verbs ("capture to inbox", "log to daily", etc.), required first read of the contract on any PKM trigger, viewer-detection (`notes/.obsidian/`) for the every-note-is-a-folder-note override, path discipline, safety guards (vault is gitignored, never proactive). Always-on because triggers fire from cold sessions before any vault declaration exists. | `.ai/adapters/_shared/personal-knowledge-management.md` (shared with Kiro) | Imported by `steering/CLAUDE.md` → `.claude/CLAUDE.md` |
+| **Skills** | Claude Code's native skills mechanism — agentskills.io-format files at `.claude/skills/<skill>/SKILL.md` (project) or `~/.claude/skills/...` (user). Loaded by Claude Code itself, with native trigger matching. Adapter wires nothing — the path is platform-native. | — | User-authored under `.claude/skills/` |
 | S1 Pre-edit gate | *(not yet implemented)* | | |
 | **S2** Focused subagent | Native Claude Code subagent (auto-delegated or invoked explicitly) | `agents/repo-worker.md` | `.claude/agents/repo-worker.md` |
 
@@ -52,7 +53,7 @@ Exit codes:
 
 ## Anti-duplication
 
-Hooks `cat` a shared file. They do not paraphrase. If future work tempts you to inline a rule into a hook script, re-read `.ai/adapters/README.md` — the adapter is a pointer, not a copy. Same rule binds hooks.
+Hooks `cat` a shared file. They do not paraphrase. If future work tempts you to inline a rule into a hook script, re-read `.ai/adapters/SKILL.md` — the adapter is a pointer, not a copy. Same rule binds hooks.
 
 ## Subagents
 
@@ -70,21 +71,27 @@ Generic archetype for tasks scoped to one repo under `git-repositories/`. It:
 
 Memory-consolidation archetype. Read-only (`tools: Read, Grep, Glob`). Reviews `.ai/workspace/learnings/`, `.ai/workspace/drift-log.md`, and per-repo `AGENTS.md` files; returns a structured Dream Report of proposals. User approves; parent applies.
 
-**When to invoke.** User-triggered only — via `/dream` slash command, or explicit "use the dream-worker subagent". Auto-invocation is disabled on the command side so Claude doesn't proactively tidy the workspace. Full procedure at `.ai/dream/README.md`.
+**When to invoke.** User-triggered only — via `/dream` slash command, or explicit "use the dream-worker subagent". Auto-invocation is disabled on the command side so Claude doesn't proactively tidy the workspace. Full procedure at `.ai/dream/SKILL.md`.
 
 ### Adding archetypes
 
 Don't add `frontend-repo`, `backend-repo`, etc. speculatively — only when a concrete pattern is repeating and its maintenance cost is clearly worth it.
 
+## Skills
+
+Claude Code natively reads agentskills.io-format skills from `.claude/skills/<skill>/SKILL.md` (project-scoped, gitignored under our `.claude/`) and `~/.claude/skills/...` (user-scoped, cross-project). Trigger matching, frontmatter, and progressive loading are handled by Claude Code itself.
+
+This adapter does not wire skills — there is nothing to generate. Author skills directly under `.claude/skills/` and Claude will pick them up at session start. Per `AGENTS.md` § "Skills", NOVA prescribes no location; this adapter recommends Claude's native path so you don't pay for a duplicate framework-level mechanism.
+
 ## Commands
 
 ### `commands/dream.md` → `/dream`
 
-Shortcut that delegates to the `dream-worker` subagent. Uses `disable-model-invocation: true` — Claude will not invoke `/dream` on its own; only the user can trigger it. MVP is strictly user-triggered; scheduled/automatic dreaming is explicitly deferred per `.ai/dream/README.md`.
+Shortcut that delegates to the `dream-worker` subagent. Uses `disable-model-invocation: true` — Claude will not invoke `/dream` on its own; only the user can trigger it. MVP is strictly user-triggered; scheduled/automatic dreaming is explicitly deferred per `.ai/dream/SKILL.md`.
 
 ## Regeneration
 
-Run the adapters procedure (`.ai/adapters/README.md`). It:
+Run the adapters procedure (`.ai/adapters/SKILL.md`). It:
 
 1. Copies `steering/CLAUDE.md` → `.claude/CLAUDE.md`.
 2. Copies `hooks/*.sh` → `.claude/hooks/`, sets them executable.
@@ -92,4 +99,4 @@ Run the adapters procedure (`.ai/adapters/README.md`). It:
 4. Merges `settings-snippet.json` into `.claude/settings.local.json` surgically.
 5. Reports what changed.
 
-Runtime outputs (the workspace-root `.claude/` only) are gitignored. Sources under `.ai/adapters/claude/` are committed. The procedure does NOT write anywhere under `git-repositories/<repo>/` — see `.ai/adapters/README.md` step 7 hard rule.
+Runtime outputs (the workspace-root `.claude/` only) are gitignored. Sources under `.ai/adapters/claude/` are committed. The procedure does NOT write anywhere under `git-repositories/<repo>/` — see `.ai/adapters/SKILL.md` step 7 hard rule.

@@ -57,7 +57,7 @@ Prefix = `Ctrl+Space`.
 ## Composes with
 
 - `.ai/ide/neovim/README.md` — editor layer. Optional but recommended; gives you Claude-in-editor via `claudecode.nvim`.
-- `.ai/terminal/README.md` § "Terminal emulator requirements (for Claude Code)" — host-emulator settings (`Shift+Enter` passthrough, meta-as-alt). **Required regardless of whether you use tmux**, since they're enforced by the outer terminal app, not by tmux.
+- `.ai/terminal/SKILL.md` § "Terminal emulator requirements (for Claude Code)" — host-emulator settings (`Shift+Enter` passthrough, meta-as-alt). **Required regardless of whether you use tmux**, since they're enforced by the outer terminal app, not by tmux.
 
 ## References
 

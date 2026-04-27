@@ -65,7 +65,7 @@ Leader = Space.
 ## Composes with
 
 - `.ai/terminal/tmux/README.md` — multiplexer layer. Optional. If present, `vim-tmux-navigator` makes `Ctrl+h/j/k/l` cross nvim/tmux pane boundaries.
-- `.ai/terminal/README.md` § "Terminal emulator requirements (for Claude Code)" — host-emulator settings (`Shift+Enter`, meta-as-alt). Required regardless of multiplexer.
+- `.ai/terminal/SKILL.md` § "Terminal emulator requirements (for Claude Code)" — host-emulator settings (`Shift+Enter`, meta-as-alt). Required regardless of multiplexer.
 
 ## References
 

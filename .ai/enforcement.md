@@ -97,4 +97,4 @@ Adding a capability: update this file, then each adapter's README and implementa
 
 Removing a capability: rare; requires equivalent replacement. Do not silently drop.
 
-Reference: this file is pointed at from `.ai/adapters/README.md`.
+Reference: this file is pointed at from `.ai/adapters/SKILL.md`.

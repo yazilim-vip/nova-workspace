@@ -1,6 +1,6 @@
 # Kiro Adapter
 
-Implements `.ai/enforcement.md` for [Kiro](https://kiro.dev). Generates `.kiro/` at the workspace root — gitignored, per-developer, regenerable by the adapters procedure (`.ai/adapters/README.md`).
+Implements `.ai/enforcement.md` for [Kiro](https://kiro.dev). Generates `.kiro/` at the workspace root — gitignored, per-developer, regenerable by the adapters procedure (`.ai/adapters/SKILL.md`).
 
 ## Capability mapping
 
@@ -10,6 +10,7 @@ Implements `.ai/enforcement.md` for [Kiro](https://kiro.dev). Generates `.kiro/`
 | **C2** Per-turn re-injection | Hook with `promptSubmit` trigger, shell-command action | `hooks/prompt-submit.sh` + `hooks/prompt-submit.kiro.hook` | `.kiro/hooks/...` |
 | **C3** Scoped rule activation | `inclusion: fileMatch` steering per registered repo | adapters/IDE procedure generator | `.kiro/steering/<repo>.md` |
 | **C5** PKM agent doctrine | `#[[file:...]]` live reference from `steering/nova.md`; always-on. Captures trigger recognition for capture verbs ("capture to inbox", "log to daily", etc.), required first read of the contract on any PKM trigger, viewer-detection (`notes/.obsidian/`) for the every-note-is-a-folder-note override, path discipline, safety guards (vault is gitignored, never proactive). Always-on because triggers fire from cold sessions before any vault declaration exists. | `.ai/adapters/_shared/personal-knowledge-management.md` (shared with Claude) | Pulled inline by `.kiro/steering/nova.md` |
+| **Skills** | Kiro's native `skill://` URI in agent `resources` for progressive loading. Default location for this adapter: `.ai/workspace/skills/<skill>/SKILL.md` (gitignored, machine-local). Repo-worker / dream-worker pre-load the glob via `skill://.ai/workspace/skills/**/SKILL.md`. | User-authored under `.ai/workspace/skills/` | Referenced from `agents/*.json` `resources` |
 | **S1** Pre-edit gate (opt-in) | `preToolUse` hook matching `fs_write` returns `exit 2` to block writes under `git-repositories/<repo>/` until that repo's `AGENTS.md` is read this session. Companion `postToolUse` tracker drops a session marker on AGENTS.md reads. | `hooks/pre-edit-gate.sh` + `pre-edit-gate.kiro.hook` + `pre-edit-gate-tracker.sh` + `pre-edit-gate-tracker.kiro.hook` | `.kiro/hooks/...` (opt-in copy) |
 | **S2** Focused subagent | Native Kiro IDE subagent. JSON config (`agents/<name>.json`) restricts tools, pre-loads scoped resources, and sets per-agent UX. Markdown body (`agents/<name>.md`) holds the system prompt; the JSON points at it via `systemPromptFile`. | `agents/repo-worker.{json,md}`, `agents/dream-worker.{json,md}` | `.kiro/agents/...` |
 
@@ -40,6 +41,12 @@ The shell script is bash — macOS / Linux only. Windows users: pending.
 
 Steering points at `AGENTS.md` and `.ai/` paths — does not reproduce them. The `#[[file:]]` inclusion used in `nova.md` pulls Kiro's platform-specific `terminal.md` inline, but that file lives under `.ai/adapters/kiro/` by design (platform-specific source of truth). That is a reference, not a duplication.
 
+## Skills
+
+Kiro doesn't have a single canonical skill directory the way Claude Code does — it loads skills via `skill://` URIs declared in agent `resources`. Per `AGENTS.md` § "Skills", NOVA prescribes no skill location, so the adapter picks one. This adapter's choice: `.ai/workspace/skills/<skill>/SKILL.md` (agentskills.io format, gitignored, machine-local). Both `repo-worker.json` and `dream-worker.json` pre-load the glob `skill://.ai/workspace/skills/**/SKILL.md` for progressive loading.
+
+If you keep skills somewhere else, update the `skill://` glob in the agent JSON configs accordingly.
+
 ## Subagents
 
 Each subagent ships as a **paired** `.json` config + `.md` system prompt. The JSON enforces capabilities the markdown frontmatter cannot — tool restriction, path-scoped `fs_write`, pre-loaded resources via `file://` and `skill://` URIs, welcome message. The markdown holds the prompt body and is referenced from the JSON via `systemPromptFile`.
@@ -54,7 +61,7 @@ Invoke via auto-selection, `/repo-worker`, or "use the repo-worker subagent to..
 
 ### `agents/dream-worker.{json,md}`
 
-Memory-consolidation archetype. Tools enforced to `read`, `grep`, `glob` via JSON config — no shell, no edit, no write. Pre-loads framework + workspace + repo map + dream procedure + skills. Reviews `.ai/workspace/learnings/`, `.ai/workspace/drift-log.md`, and per-repo `AGENTS.md` files; returns a structured Dream Report. User-triggered via `/dream-worker` or "use the dream-worker subagent". Full procedure at `.ai/dream/README.md`.
+Memory-consolidation archetype. Tools enforced to `read`, `grep`, `glob` via JSON config — no shell, no edit, no write. Pre-loads framework + workspace + repo map + dream procedure + skills. Reviews `.ai/workspace/learnings/`, `.ai/workspace/drift-log.md`, and per-repo `AGENTS.md` files; returns a structured Dream Report. User-triggered via `/dream-worker` or "use the dream-worker subagent". Full procedure at `.ai/dream/SKILL.md`.
 
 ### Adding new agent files
 
@@ -62,7 +69,7 @@ New subagents authored after the adapters procedure last ran will be missing fro
 
 ## Regeneration
 
-Run the adapters procedure (`.ai/adapters/README.md`). It:
+Run the adapters procedure (`.ai/adapters/SKILL.md`). It:
 
 1. Copies `steering/*.md` → `.kiro/steering/`.
 2. Copies `hooks/*.sh` → `.kiro/hooks/`, sets executable. **Skips opt-in scripts** (`pre-edit-gate*.sh`, `agent-spawn.sh`) unless the user requested them.

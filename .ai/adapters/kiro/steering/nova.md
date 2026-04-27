@@ -9,7 +9,7 @@ You are in a NOVA workspace. All rules live in `AGENTS.md` and `.ai/` — this f
 ## Navigation (read in order, as needed)
 
 1. `AGENTS.md` — framework defaults.
-2. `.ai/workspace/AGENTS.md` — workspace identity and overrides. If missing, run `.ai/onboarding/README.md`.
+2. `.ai/workspace/AGENTS.md` — workspace identity and overrides. If missing, run `.ai/onboarding/SKILL.md`.
 3. `.ai/workspace/map/repos.md` — repository map. Never guess repo paths.
 4. Per-repo `AGENTS.md` — when entering `git-repositories/<repo>/`.
 5. Skills, learnings, procedures — on demand.

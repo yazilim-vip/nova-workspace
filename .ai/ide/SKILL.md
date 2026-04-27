@@ -1,6 +1,11 @@
+---
+name: nova-ide
+description: Set up an IDE's project config — generate IntelliJ `.idea/` modules, register cloned repos, create run configurations, integrate Neovim plugins. Trigger when the user says "set up intellij", "generate idea config", "register repos as intellij modules", "add run configuration for <module>", "set up neovim", or "integrate claudecode.nvim".
+---
+
 # IDE
 
-Framework procedure — read when the user asks to set up an IDE's project config (generate `.idea/` modules, register cloned repos as IDE modules, create run configurations). Not a skill.
+Framework skill — generates IDE project configuration so cloned repos under `git-repositories/` open as native modules. Per-IDE implementation lives under `.ai/ide/<ide>/`.
 
 ## Why this exists
 

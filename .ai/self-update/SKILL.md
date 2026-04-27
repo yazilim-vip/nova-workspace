@@ -1,6 +1,11 @@
+---
+name: nova-self-update
+description: Sync the local NOVA workspace with upstream — review upstream changes as proposals, never blind-merge. Trigger when the user says "sync with upstream", "pull NOVA updates", "update the workspace", or "review upstream changes before merge".
+---
+
 # Self-Update
 
-Framework procedure — read when the user asks to sync with upstream, pull NOVA updates, update the workspace, or review upstream changes. Not a skill; it's how the framework updates itself. Never run a blind `git merge` — upstream changes are proposals, not commands.
+Framework skill — keeps the workspace in sync with upstream NOVA. Upstream changes are proposals, not commands; never run a blind `git merge`.
 
 ## Principle
 

@@ -1,8 +1,8 @@
 # Notes — Obsidian adapter
 
-Obsidian-specific setup for the `notes/` vault contract (`.ai/personal-knowledge-management/README.md`). This adapter owns: required Obsidian plugins, vault settings, the **every-note-is-a-folder-note** rule that activates when Obsidian is in use, in-Obsidian terminal wiring, and Obsidian-specific link extensions.
+Obsidian-specific setup for the `notes/` vault contract (`.ai/personal-knowledge-management/SKILL.md`). This adapter owns: required Obsidian plugins, vault settings, the **every-note-is-a-folder-note** rule that activates when Obsidian is in use, in-Obsidian terminal wiring, and Obsidian-specific link extensions.
 
-> **Anti-duplication.** This file owns *what's specific to Obsidian*. The vault layout (PARA, frontmatter schema, folder-notes layout convention, capture vocabulary) lives in `.ai/personal-knowledge-management/README.md` — never restated here.
+> **Anti-duplication.** This file owns *what's specific to Obsidian*. The vault layout (PARA, frontmatter schema, folder-notes layout convention, capture vocabulary) lives in `.ai/personal-knowledge-management/SKILL.md` — never restated here.
 
 ## Why Obsidian
 
@@ -63,7 +63,7 @@ notes/daily/
 
 ### Agent capture vocabulary, Obsidian variant
 
-The contract's capture verbs (`.ai/personal-knowledge-management/README.md` § Agent capture vocabulary) get this scaffold shape when the Obsidian adapter is active:
+The contract's capture verbs (`.ai/personal-knowledge-management/SKILL.md` § Agent capture vocabulary) get this scaffold shape when the Obsidian adapter is active:
 
 | User intent | Path created |
 |---|---|
@@ -162,7 +162,7 @@ Invoke the agent by opening a Terminal pane (ribbon icon, or command palette →
 
 ## Obsidian-flavored extensions to the contract's link syntax
 
-The contract (`.ai/personal-knowledge-management/README.md` § Frontmatter schema) uses plain `[[wikilink]]`. Obsidian additionally supports — and the agent may emit when filing into an Obsidian vault:
+The contract (`.ai/personal-knowledge-management/SKILL.md` § Frontmatter schema) uses plain `[[wikilink]]`. Obsidian additionally supports — and the agent may emit when filing into an Obsidian vault:
 
 - `[[note|alias]]` — display alias for the link.
 - `![[note]]` — transclude/embed another note inline.
@@ -197,7 +197,7 @@ The agent does not assume the user wants Obsidian opened automatically — it le
 
 ## Cross-references
 
-- `.ai/personal-knowledge-management/README.md` — vault contract (PARA, frontmatter, folder-notes layout, capture vocabulary). This adapter overrides the contract's "flat by default" preference.
+- `.ai/personal-knowledge-management/SKILL.md` — vault contract (PARA, frontmatter, folder-notes layout, capture vocabulary). This adapter overrides the contract's "flat by default" preference.
 - `.ai/personal-knowledge-management/adapters/README.md` — viewer adapter index.
 - [LostPaul/obsidian-folder-notes](https://github.com/LostPaul/obsidian-folder-notes) — Folder Notes plugin repo.
 - [Folder Notes plugin docs](https://lostpaul.github.io/obsidian-folder-notes/) — settings reference.

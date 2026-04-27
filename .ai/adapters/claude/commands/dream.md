@@ -4,7 +4,7 @@ description: Run a NOVA dream pass — review accumulated workspace memory and p
 disable-model-invocation: true
 ---
 
-Run a NOVA dream pass per `.ai/dream/README.md`.
+Run a NOVA dream pass per `.ai/dream/SKILL.md`.
 
 Delegate to the `dream-worker` subagent. The subagent runs read-only in a fresh context, reviews `.ai/workspace/learnings/`, `.ai/workspace/drift-log.md`, and per-repo `AGENTS.md` files, and returns a structured Dream Report of proposed consolidations.
 

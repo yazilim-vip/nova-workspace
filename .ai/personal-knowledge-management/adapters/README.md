@@ -1,6 +1,6 @@
 # Notes — viewer adapters
 
-Per-viewer implementations of the notes vault contract (`.ai/personal-knowledge-management/README.md`). Same shape as `.ai/adapters/<coding-agent>/`: the contract is tool-neutral; adapters are opt-in per-viewer specifics.
+Per-viewer implementations of the notes vault contract (`.ai/personal-knowledge-management/SKILL.md`). Same shape as `.ai/adapters/<coding-agent>/`: the contract is tool-neutral; adapters are opt-in per-viewer specifics.
 
 ## Why adapters
 
@@ -10,7 +10,7 @@ Adapters keep the contract clean and make viewer choice a per-developer, per-mac
 
 ## Anti-duplication rule
 
-If a rule applies to every notes vault, it belongs in `.ai/personal-knowledge-management/README.md`. If it applies only to one viewer, it belongs under `.ai/personal-knowledge-management/adapters/<viewer>/`. Adapters reference the contract; they never restate or contradict it.
+If a rule applies to every notes vault, it belongs in `.ai/personal-knowledge-management/SKILL.md`. If it applies only to one viewer, it belongs under `.ai/personal-knowledge-management/adapters/<viewer>/`. Adapters reference the contract; they never restate or contradict it.
 
 ## Activation
 

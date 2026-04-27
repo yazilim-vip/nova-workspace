@@ -1,8 +1,11 @@
+---
+name: nova-terminal
+description: Set up the terminal layer of a Claude-Code-friendly dev stack — terminal multiplexer (tmux et al.) and host-emulator settings (Shift+Enter, etc.). Trigger when the user says "set up tmux", "set up my terminal", "I want a terminal IDE", or "Shift+Enter doesn't work in Claude". Editor layer lives under `.ai/ide/`, not here.
+---
+
 # Terminal
 
-Framework procedure — read when the user asks to set up the terminal layer of a Claude-Code-friendly dev stack: terminal multiplexer (tmux et al.) and the host-emulator settings Claude requires.
-
-The editor layer (Neovim, IntelliJ, etc.) lives under `.ai/ide/`, not here.
+Framework skill — terminal multiplexer + host-emulator setup for a Claude-Code-friendly dev stack. The editor layer (Neovim, IntelliJ, etc.) lives under `.ai/ide/`, not here.
 
 ## Why this exists
 
@@ -60,13 +63,13 @@ More multiplexers get added as they're supported. Multiplexer is optional — Cl
 - "Shift+Enter doesn't work in Claude inside tmux"
 - "Claude TUI looks broken in my terminal"
 
-For editor setup ("set up neovim", "integrate claudecode.nvim"), see `.ai/ide/README.md`.
+For editor setup ("set up neovim", "integrate claudecode.nvim"), see `.ai/ide/SKILL.md`.
 
 ## Full stack recipe (tmux + Neovim + Ghostty)
 
 This is the recipe most people in this workspace use. Three independently-installable docs, read in this order:
 
-1. `.ai/terminal/README.md` § "Terminal emulator requirements" *(this file — host-emulator settings)*
+1. `.ai/terminal/SKILL.md` § "Terminal emulator requirements" *(this file — host-emulator settings)*
 2. `.ai/terminal/tmux/README.md` *(multiplexer)*
 3. `.ai/ide/neovim/README.md` *(editor with `claudecode.nvim` MCP bridge)*
 
