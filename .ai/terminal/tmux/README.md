@@ -52,14 +52,16 @@ Prefix = `Ctrl+Space`.
 
 Two-key prefix combos (`Ctrl+Space` then `v`) are tmux's default for safety — single-key bindings can collide with shell, editor, or app keys. But for high-frequency actions, a one-shot bind is faster. The trick is picking a modifier that's free across the stack.
 
-**`Alt+<key>` is the safe space.** Shell and Claude don't claim Alt-prefixed keys; vim uses Alt rarely (and you can rebind around it). The prerequisite is host-emulator "meta-as-alt" — already required by `.ai/terminal/SKILL.md`, so you're already paying that cost.
+**`Alt+<arrow>` and a few `Alt+<letter>` keys are the safe space.** Shell and Claude don't claim them; vim uses Alt rarely. The prerequisite is host-emulator "meta-as-alt" — already required by `.ai/terminal/SKILL.md`, so you're already paying that cost.
+
+**macOS caveat.** On Mac, Option+letter has a built-in "type a special character" mapping (Option+H = `˙`, Option+V = `√`, Option+1 = `¡`, etc.). With meta-as-alt set in your terminal emulator, the modifier is intercepted before the character mapping fires — so the bindings work — *but* the letter combos still feel surprising if meta-as-alt isn't bulletproof. **Arrow-key bindings have no Option-character mapping at all**, which is why we use them for window navigation. The letter bindings below (`v/s/n/x/z`) are kept because their character mappings are rarely typed.
 
 This section is **opt-in** — add only if you want it. Bindings live alongside (not instead of) the prefix bindings, so muscle memory for either keeps working.
 
 | Bind | Action |
 |------|--------|
 | `Ctrl+h/j/k/l` | Pane focus (already prefix-less via `vim-tmux-navigator`) |
-| `Alt+h/l` | Previous / next window |
+| `Alt+Left` / `Alt+Right` | Previous / next window |
 | `Alt+1`…`Alt+9` | Jump to window N |
 | `Alt+v` | Vertical split |
 | `Alt+s` | Horizontal split |
@@ -71,8 +73,8 @@ Add to `~/.tmux.conf`:
 
 ```tmux
 # One-shot (no-prefix) bindings — opt-in. Requires host-emulator meta-as-alt.
-bind-key -n M-h previous-window
-bind-key -n M-l next-window
+bind-key -n M-Left  previous-window
+bind-key -n M-Right next-window
 bind-key -n M-1 select-window -t 1
 bind-key -n M-2 select-window -t 2
 bind-key -n M-3 select-window -t 3
@@ -90,12 +92,13 @@ bind-key -n M-z resize-pane -Z
 ```
 
 **Why these picks:**
-- `Alt+h/l` mirrors vim-style horizontal motion at the window level (Alt+j/k are intentionally *not* taken — they'd collide with vim-tmux-navigator's pane logic in some terminal apps).
+- `Alt+Left`/`Alt+Right` for window switching — arrow keys have no Option-character mapping on macOS, so they work whether meta-as-alt is reliable or shaky.
 - `Alt+v`/`Alt+s` mirror vim split commands and the existing `prefix + v/s` muscle memory.
-- `Alt+1`…`Alt+9` matches the convention many tiling WMs and modern terminals use, so it transfers across tools.
+- `Alt+1`…`Alt+9` matches the convention many tiling WMs and modern terminals use; works on Mac with meta-as-alt set.
 - `Alt+x` is gated behind a confirm prompt because pane kill is destructive.
 
 **Skip-list (don't bind these without research):**
+- `Alt+h`, `Alt+l` — Option+H is intercepted in some Mac stacks (window managers, app shortcuts). Use `Alt+Left`/`Alt+Right` instead.
 - `Alt+f`, `Alt+b`, `Alt+d`, `Alt+.` — readline word-motion / yank-last-arg in zsh & bash. Binding them in tmux breaks shell editing.
 - `Alt+Enter` — some terminals send this as toggle-fullscreen.
 - `Alt+,`, `Alt+;` — vim default `g,`/`g;` analogues if you remap.

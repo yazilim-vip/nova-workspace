@@ -4,7 +4,7 @@ A minimal, opinionless framework for running AI agents across multi-repo develop
 
 NOVA is a markdown-based framework built on the [AGENTS.md](https://agents.md) convention. It gives an AI agent a consistent identity, safety rules, and navigation protocol across a multi-repo workspace — so the agent behaves the same way whether you're in Claude Code, Cursor, Codex, or any other AGENTS.md-compatible tool.
 
-**NOVA does not ship opinions and does not ship skills.** Opinions about how you write code, use git, run Kubernetes, or manage infrastructure belong to you. The framework ships only its own machinery: how to onboard a new workspace, how to pull upstream changes deliberately, and a convention for how individual projects organize their agent-facing content.
+**NOVA ships its own machinery, not opinions about your code.** The framework brings workspace onboarding, deliberate upstream sync, per-platform adapter wiring, and a project-structure convention. It stays out of how you write code, use git, run Kubernetes, or manage infrastructure — those choices live with you, in the tier that fits.
 
 ## What you get
 
@@ -12,24 +12,25 @@ NOVA is a markdown-based framework built on the [AGENTS.md](https://agents.md) c
 - **`SOUL.md`** — voice and depth, loaded only when the task demands it.
 - **`.ai/enforcement.md`** — platform-agnostic contract that turns prose rules into deterministic agent behavior (session-start broadcast, per-turn re-injection, scoped activation, optional pre-edit gate, focused subagent).
 - **`.ai/adapters/`** — per-platform implementations of the enforcement contract. Ships [Claude Code](.ai/adapters/claude/README.md) and [Kiro](.ai/adapters/kiro/README.md) today; pluggable for more.
-- **Framework procedures under `.ai/<name>/`** — read on trigger:
-  - `onboarding/` — guided workspace setup.
-  - `self-update/` — deliberate upstream sync.
-  - `adapters/` — generate per-platform steering, hooks, subagents.
-  - `ide/` — editor setup. IntelliJ multi-module project; Neovim with `claudecode.nvim` MCP bridge.
-  - `terminal/` — terminal multiplexer (tmux) and host-emulator settings Claude requires.
-  - `dream/` — periodic memory consolidation pass over learnings + drift log.
+- **Framework skills under `.ai/<name>/SKILL.md`** — agentskills.io-format, `nova-`-prefixed. Listed in `AGENTS.md` § "Framework Skills"; loaded on trigger:
+  - `nova-onboarding` — guided workspace setup.
+  - `nova-self-update` — deliberate upstream sync.
+  - `nova-adapters` — generate per-platform steering, hooks, subagents.
+  - `nova-ide` — editor setup. IntelliJ multi-module project; Neovim with `claudecode.nvim` MCP bridge.
+  - `nova-terminal` — terminal multiplexer (tmux) and host-emulator settings Claude requires.
+  - `nova-dream` — periodic memory consolidation pass over learnings + drift log.
+  - `nova-personal-knowledge-management` — manages a personal knowledge vault under `notes/`.
 - **`.ai/project-structure.md`** — NOVA's convention for a single project's AGENTS.md / `.ai/` layout. A reference doc.
-- **`.ai/workspace/`** — the local workspace instance (gitignored; populated during onboarding). **Your skills live here** at `.ai/workspace/skills/<name>/SKILL.md`, in the [agentskills.io](https://agentskills.io) format.
+- **`.ai/workspace/`** — the local workspace instance (gitignored; populated during onboarding) — workspace identity, repo map, infra config, accumulated learnings.
 - **`git-repositories/`** — the clone convention (`<platform>/<group>/<repo>`; gitignored).
 
 **Mental model:**
-- `.ai/<name>/` = NOVA's own procedures (read on trigger).
+- `.ai/<name>/SKILL.md` = NOVA's own framework skills (agentskills.io format, `nova-`-prefixed, listed in AGENTS.md table).
 - `.ai/*.md` = NOVA's conventions (read when context demands).
 - `.ai/adapters/` = per-platform pointers + hooks + subagents (committed; runtime outputs like `.claude/`, `.kiro/` are gitignored, regenerable).
-- `.ai/workspace/` = yours (local, gitignored). Skills, infra config, learnings — all yours.
+- `.ai/workspace/` = your local workspace state (gitignored). Identity overrides, repo map, infra config, learnings.
 
-NOVA never writes into `.ai/workspace/` upstream and never ships a committed skills folder. Your skills stay local by default.
+NOVA never writes into `.ai/workspace/` upstream — your local state stays yours.
 
 ## Why workspace-level, not repo-level?
 
@@ -65,15 +66,14 @@ See a full example conversation in [.ai/onboarding/assets/example-dialogue.md](.
 
 ## Bringing your own skills
 
-Author them in the [agentskills.io](https://agentskills.io) format and drop them at `.ai/workspace/skills/<name>/SKILL.md`. That path is gitignored — machine-local, per-developer.
+Skills can live at any tier of the workspace hierarchy. NOVA prescribes paths only for framework-shipped skills; everything else is your call.
 
-**Sharing skills across a team is a fork-level decision, not a framework one.** Common patterns teams use:
+- **Workspace user skills** — generic, cross-repo skills you write yourself. NOVA prescribes no location. Common spots: host-native location (e.g. `.claude/skills/` for Claude Code, picked up by the native loader), `.ai/workspace/skills/`, or wherever else suits you. Each platform's adapter at `.ai/adapters/<platform>/README.md` § "Skills" describes the native path.
+- **Project skills** — domain-specific skills owned by one repo. Declared in the repo's own `AGENTS.md` and stored at the repo's choice (`<repo>/.ai/skills/<name>/SKILL.md` is one common convention, not required). Auto-loaded when the agent enters the repo. Same skill name (`deploy`, `test`, `migrate`) can mean different things across repos because scope is location-disambiguated.
 
-- Fork NOVA and override `.gitignore` in your fork to commit `.ai/workspace/skills/`.
-- Keep team skills in a separate repo and symlink or copy them in.
-- Use any other sharing convention that fits your team.
+Pick whichever tier(s) fit your workflow. Mix freely. See `AGENTS.md` § "Skills" and `.ai/project-structure.md` § "Project Skills" for details.
 
-NOVA stays out of that choice — it doesn't ship a prescribed "team skills" slot because prescribing one would push teams into a pattern that doesn't suit them.
+**Sharing user skills across a team is a fork-level decision, not a framework one.** Common patterns: commit at the chosen path, keep team skills in a separate repo and symlink, or any other convention that fits.
 
 Example skill frontmatter:
 

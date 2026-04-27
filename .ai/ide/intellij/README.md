@@ -1,6 +1,6 @@
 # IntelliJ IDEA
 
-Framework procedure — generate IntelliJ project config (`.idea/`) from the NOVA workspace's cloned repos, and optionally register run configurations.
+Implementation detail of `nova-ide` — generates IntelliJ project config (`.idea/`) from the NOVA workspace's cloned repos and optionally registers run configurations. Loaded on demand by the parent skill at `.ai/ide/SKILL.md`.
 
 ## When to trigger
 

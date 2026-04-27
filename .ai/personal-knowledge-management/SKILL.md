@@ -192,7 +192,7 @@ Concrete template bodies are written by the scaffold step and live in the vault,
 
 ## Cross-references
 
-- Root `AGENTS.md` — Framework Procedures table includes a row pointing here.
+- Root `AGENTS.md` — Framework Skills table includes a row pointing here.
 - `.ai/personal-knowledge-management/adapters/README.md` — viewer adapter index.
 - `.ai/workspace/learnings/` — agent-consumed cross-project knowledge (different audience).
 - `.ai/adapters/<agent>/` — where agent-specific shell-command JSON belongs if a workspace pre-bakes it (otherwise the agent generates on demand).

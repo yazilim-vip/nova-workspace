@@ -20,12 +20,12 @@ Walk each commit (or squash logical groups) and classify:
 
 | Class | What it is | Default action |
 |-------|-----------|----------------|
-| **Framework procedure change** | Change to `.ai/onboarding/` or `.ai/self-update/` | Usually apply — core machinery. If the fork customized the procedure, surface the diff. |
+| **Framework skill change** | Change to a `.ai/<name>/SKILL.md` (e.g. `nova-onboarding`, `nova-self-update`) or its supporting files | Usually apply — core machinery. If the fork customized the skill, surface the diff. |
 | **Convention doc change** | Change to flat `.ai/*.md` (e.g. `.ai/project-structure.md`) | Apply unless the fork has diverged |
 | **Onboarding template change** | `.ai/onboarding/assets/*` | Apply unless the fork has diverged |
 | **AGENTS.md / SOUL.md change** | Edit to root-level instruction files | Always discuss — these are identity files, forks often customize heavily |
 | **Docs / README** | README.md, top-level docs | Apply unless fork-specific wording exists |
-| **Breaking / structural** | Path renames, removed procedures, schema changes | Discuss — may require fork migration |
+| **Breaking / structural** | Path renames, removed skills, schema changes | Discuss — may require fork migration |
 | **Deprecation** | Marked-deprecated content | Note in learnings; schedule removal, don't apply blindly |
 
 ## 3. Present the plan

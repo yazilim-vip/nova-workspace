@@ -63,4 +63,4 @@ The first action is always *read first, write second*. Cold sessions especially.
 
 - `.ai/personal-knowledge-management/SKILL.md` — vault contract.
 - `.ai/personal-knowledge-management/adapters/<viewer>/README.md` — viewer-specific overrides.
-- `AGENTS.md` § Framework Procedures — table row for `personal-knowledge-management`.
+- `AGENTS.md` § Framework Skills — table row for `nova-personal-knowledge-management`.
