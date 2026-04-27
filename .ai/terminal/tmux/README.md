@@ -48,6 +48,58 @@ Prefix = `Ctrl+Space`.
 | `prefix + I` | Install TPM plugins (after editing `.tmux.conf`) |
 | `prefix + C-s` / `C-r` | Resurrect save / restore |
 
+## Optional: one-shot bindings (no prefix)
+
+Two-key prefix combos (`Ctrl+Space` then `v`) are tmux's default for safety — single-key bindings can collide with shell, editor, or app keys. But for high-frequency actions, a one-shot bind is faster. The trick is picking a modifier that's free across the stack.
+
+**`Alt+<key>` is the safe space.** Shell and Claude don't claim Alt-prefixed keys; vim uses Alt rarely (and you can rebind around it). The prerequisite is host-emulator "meta-as-alt" — already required by `.ai/terminal/SKILL.md`, so you're already paying that cost.
+
+This section is **opt-in** — add only if you want it. Bindings live alongside (not instead of) the prefix bindings, so muscle memory for either keeps working.
+
+| Bind | Action |
+|------|--------|
+| `Ctrl+h/j/k/l` | Pane focus (already prefix-less via `vim-tmux-navigator`) |
+| `Alt+h/l` | Previous / next window |
+| `Alt+1`…`Alt+9` | Jump to window N |
+| `Alt+v` | Vertical split |
+| `Alt+s` | Horizontal split |
+| `Alt+n` | New window |
+| `Alt+x` | Close pane (with confirm) |
+| `Alt+z` | Toggle zoom |
+
+Add to `~/.tmux.conf`:
+
+```tmux
+# One-shot (no-prefix) bindings — opt-in. Requires host-emulator meta-as-alt.
+bind-key -n M-h previous-window
+bind-key -n M-l next-window
+bind-key -n M-1 select-window -t 1
+bind-key -n M-2 select-window -t 2
+bind-key -n M-3 select-window -t 3
+bind-key -n M-4 select-window -t 4
+bind-key -n M-5 select-window -t 5
+bind-key -n M-6 select-window -t 6
+bind-key -n M-7 select-window -t 7
+bind-key -n M-8 select-window -t 8
+bind-key -n M-9 select-window -t 9
+bind-key -n M-v split-window -h -c "#{pane_current_path}"
+bind-key -n M-s split-window -v -c "#{pane_current_path}"
+bind-key -n M-n new-window -c "#{pane_current_path}"
+bind-key -n M-x confirm-before -p "kill pane? (y/n)" kill-pane
+bind-key -n M-z resize-pane -Z
+```
+
+**Why these picks:**
+- `Alt+h/l` mirrors vim-style horizontal motion at the window level (Alt+j/k are intentionally *not* taken — they'd collide with vim-tmux-navigator's pane logic in some terminal apps).
+- `Alt+v`/`Alt+s` mirror vim split commands and the existing `prefix + v/s` muscle memory.
+- `Alt+1`…`Alt+9` matches the convention many tiling WMs and modern terminals use, so it transfers across tools.
+- `Alt+x` is gated behind a confirm prompt because pane kill is destructive.
+
+**Skip-list (don't bind these without research):**
+- `Alt+f`, `Alt+b`, `Alt+d`, `Alt+.` — readline word-motion / yank-last-arg in zsh & bash. Binding them in tmux breaks shell editing.
+- `Alt+Enter` — some terminals send this as toggle-fullscreen.
+- `Alt+,`, `Alt+;` — vim default `g,`/`g;` analogues if you remap.
+
 ## Gotchas
 
 - **Run Claude's `/terminal-setup` outside tmux.** It writes host-emulator config (the terminal app's own settings file), not tmux's. Inside tmux it does nothing useful.
