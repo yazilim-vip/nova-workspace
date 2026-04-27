@@ -63,16 +63,7 @@ Templates with `{{PLACEHOLDERS}}` live under `templates/`. Research notes on the
    - Per-repo follow-ups:
      - "For Maven repos, right-click `pom.xml` in IntelliJ → **Add as Maven Project** to upgrade that module with proper dependency resolution."
      - "For Gradle repos, right-click `build.gradle[.kts]` → **Link Gradle Project**."
-
-7. **Verify (only when IntelliJ is the active host — see `.ai/workspace/AGENTS.md` Host Environments)**
-
-   Close the loop by asking IntelliJ what it actually sees:
-
-   - `mcp__idea__get_project_modules` → expected count + names match what we wrote to `modules.xml`.
-   - `mcp__idea__get_repositories` → expected VCS roots match `vcs.xml` (one per cloned repo + workspace root).
-   - `mcp__idea__get_run_configurations` → any configs we wrote are visible.
-
-   **Reload asymmetry — known IntelliJ behavior:** `modules.xml` auto-reloads as you write it; new `.iml` modules appear immediately. `vcs.xml` does **not** — IntelliJ caches VCS mappings, so newly added roots stay invisible to its UI until the user runs **File → Reload Project from Disk** (or restarts the IDE). If `get_repositories` count lags `get_project_modules` count, surface this exact instruction to the user — don't pretend the write succeeded fully.
+   - **Reload asymmetry — known IntelliJ behavior:** `modules.xml` auto-reloads as you write it; new `.iml` modules appear immediately. `vcs.xml` does **not** — IntelliJ caches VCS mappings, so newly added roots stay invisible to its UI until the user runs **File → Reload Project from Disk** (or restarts the IDE). Always tell the user: "If the VCS panel looks stale, run **File → Reload Project from Disk**."
 
 ## Standalone flow: `sync intellij` (incremental, no backup)
 
@@ -80,16 +71,16 @@ Triggered without full IDE setup — user wants to add new repos to an existing 
 
 When to use over the core flow: every time *after* the first run. The core flow's backup-and-overwrite makes sense once; sync is the steady-state.
 
-1. **Preflight** — confirm `.idea/` exists at the workspace root (if not, the user wants the core flow). Confirm `mcp__idea__*` tools are reachable (host must declare `intellij` per `.ai/adapters/<platform>/intellij-mcp.md`).
+1. **Preflight** — confirm `.idea/` exists at the workspace root (if not, the user wants the core flow).
 
-2. **Diff IntelliJ vs. filesystem**
+2. **Diff `.idea/modules.xml` vs. filesystem**
 
    ```
    filesystem repos = walk(git-repositories/) for .git directories  # unbounded depth — see core flow Phase 2
-   intellij modules = mcp__idea__get_project_modules()
-   intellij roots   = mcp__idea__get_repositories()
-   missing          = filesystem - intellij
-   stale            = intellij - filesystem        # cloned repo got deleted
+   registered modules = parse(.idea/modules.xml)        # source of truth: what we last wrote
+   registered roots   = parse(.idea/vcs.xml)
+   missing            = filesystem - registered modules
+   stale              = registered modules - filesystem # cloned repo got deleted
    ```
 
    For each `missing` repo, also run **nested project detection** (see section below) — propose any sub-projects worth registering as separate modules.
@@ -107,11 +98,7 @@ When to use over the core flow: every time *after* the first run. The core flow'
    - Remove the `<module>` line from `modules.xml`.
    - Remove the `<mapping>` line from `vcs.xml`.
 
-6. **Verify** — run the same Phase 7 checks as the core flow:
-   - `get_project_modules` count matches expected post-sync count.
-   - `get_repositories` count matches — and warn the user about the VCS-mapping reload asymmetry if it lags.
-
-7. **Report** — additions, removals, and the explicit "if VCS panel looks stale, **File → Reload Project from Disk**" instruction.
+6. **Report** — additions, removals, and the explicit "if VCS panel looks stale, **File → Reload Project from Disk**" instruction.
 
 ## Standalone flow: `create a run config for <module>`
 

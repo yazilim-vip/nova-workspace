@@ -4,9 +4,9 @@ Always-on agent rules for recognizing PKM (notes vault) intent and routing it th
 
 > **Anti-duplication.** This file owns *how the agent recognizes and routes PKM intent*. Vault layout, frontmatter, capture-verb behavior, and viewer-specific rules live in `.ai/personal-knowledge-management/` — never restated here.
 
-## Why this is always-on (not activation-gated)
+## Why this is always-on
 
-The IntelliJ MCP doctrine is gated on a workspace declaration because IntelliJ tools only exist when the user is in IntelliJ. PKM doctrine cannot be gated the same way: the user types **"set up notes vault"** *before* any vault or declaration exists. The agent must recognize the trigger from a cold session. The doctrine is small enough that always-on costs nothing.
+The user types **"set up notes vault"** *before* any vault or declaration exists. The agent must recognize the trigger from a cold session, so PKM doctrine cannot be gated on a vault-presence flag. The doctrine is small enough that always-on costs nothing.
 
 ## Trigger recognition
 
@@ -29,7 +29,7 @@ Before taking any other action:
 1. **Read the contract:** `.ai/personal-knowledge-management/README.md`. It owns vault layout (PARA), naming, frontmatter schema, folder-notes layout, capture vocabulary behaviors. Do not infer these — read them.
 2. **Detect viewer:** check whether `notes/.obsidian/` exists at the workspace root (`Bash` `test -d notes/.obsidian` or equivalent). If yes, also read `.ai/personal-knowledge-management/adapters/obsidian/README.md` — its **strong rule "every note is a folder note"** overrides the contract's flat-by-default preference.
 3. **Detect vault presence:** if the trigger is a capture/scaffold verb but `notes/` does not exist yet, do **not** start writing — surface this to the user and offer to scaffold per the contract first.
-4. **Check workspace AGENTS.md:** workspace overrides may add or restrict viewers; respect declared host environments and viewers.
+4. **Check workspace AGENTS.md:** workspace overrides may add or restrict viewers; respect declared viewers.
 
 The first action is always *read first, write second*. Cold sessions especially.
 

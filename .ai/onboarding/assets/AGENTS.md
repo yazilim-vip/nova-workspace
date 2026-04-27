@@ -6,12 +6,6 @@ Workspace-specific overrides to the root `AGENTS.md`. Loaded after the root file
 
 {{One sentence. Whose workspace this is and what it's for. Example: "This workspace belongs to the acme-platform crew — product infra for Acme's retail stack."}}
 
-## Host Environments
-
-Where the user runs CLI agents (Claude Code, Kiro CLI, etc.). Drives which platform-doctrine files under `.ai/adapters/<platform>/` activate at runtime. Declared, not detected.
-
-{{One or more of: `terminal` (iTerm2, Terminal.app, tmux), `vscode` (VS Code terminal pane), `intellij` (IntelliJ IDEA terminal pane). Example: "Host environments: `terminal`, `intellij`."}}
-
 ## Additional Safety Rules
 
 {{Workspace-specific non-negotiables that extend the root safety list. Delete section if none.}}

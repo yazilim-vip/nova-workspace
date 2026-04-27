@@ -1,7 +1,6 @@
 @../AGENTS.md
 @../.ai/workspace/AGENTS.md
 @../.ai/workspace/map/repos.md
-@../.ai/adapters/claude/intellij-mcp.md
 @../.ai/adapters/_shared/personal-knowledge-management.md
 
 # NOVA Workspace — Claude Adapter
