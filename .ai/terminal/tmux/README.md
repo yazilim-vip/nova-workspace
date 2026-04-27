@@ -60,7 +60,8 @@ This section is **opt-in** — add only if you want it. Bindings live alongside 
 
 | Bind | Action |
 |------|--------|
-| `Ctrl+h/j/k/l` | Pane focus (already prefix-less via `vim-tmux-navigator`) |
+| `Ctrl+h/j/k/l` | Pane focus across nvim/tmux boundaries (via `vim-tmux-navigator`) |
+| `Alt+i/j/k/l` | Pane focus (tmux-only inverted-T: up / left / down / right) |
 | `Alt+Left` / `Alt+Right` | Previous / next window |
 | `Alt+1`…`Alt+9` | Jump to window N |
 | `Alt+v` | Vertical split |
@@ -73,6 +74,12 @@ Add to `~/.tmux.conf`:
 
 ```tmux
 # One-shot (no-prefix) bindings — opt-in. Requires host-emulator meta-as-alt.
+# Pane focus (inverted-T, tmux-only — Ctrl+h/j/k/l still crosses nvim via vim-tmux-navigator)
+bind-key -n M-i select-pane -U
+bind-key -n M-j select-pane -L
+bind-key -n M-k select-pane -D
+bind-key -n M-l select-pane -R
+# Window navigation
 bind-key -n M-Left  previous-window
 bind-key -n M-Right next-window
 bind-key -n M-1 select-window -t 1
@@ -84,6 +91,7 @@ bind-key -n M-6 select-window -t 6
 bind-key -n M-7 select-window -t 7
 bind-key -n M-8 select-window -t 8
 bind-key -n M-9 select-window -t 9
+# Pane management
 bind-key -n M-v split-window -h -c "#{pane_current_path}"
 bind-key -n M-s split-window -v -c "#{pane_current_path}"
 bind-key -n M-n new-window -c "#{pane_current_path}"
@@ -92,13 +100,16 @@ bind-key -n M-z resize-pane -Z
 ```
 
 **Why these picks:**
+- `Alt+i/j/k/l` as an inverted-T for pane focus — independent of vim-tmux-navigator (which uses Ctrl). Use either set; they coexist. ijkl is the gamer-style layout (i=up, j=left, k=down, l=right), so it doesn't compete with the vim h/j/k/l muscle memory you already have on Ctrl.
 - `Alt+Left`/`Alt+Right` for window switching — arrow keys have no Option-character mapping on macOS, so they work whether meta-as-alt is reliable or shaky.
 - `Alt+v`/`Alt+s` mirror vim split commands and the existing `prefix + v/s` muscle memory.
 - `Alt+1`…`Alt+9` matches the convention many tiling WMs and modern terminals use; works on Mac with meta-as-alt set.
 - `Alt+x` is gated behind a confirm prompt because pane kill is destructive.
 
+**Caveat for `Alt+j` / `Alt+k`:** some nvim configs (and VS Code) bind these to "move line up/down." If yours does, the tmux binding wins inside the terminal and you'll need to unbind the editor side or pick a different combo. `Alt+i` / `Alt+l` are generally free.
+
 **Skip-list (don't bind these without research):**
-- `Alt+h`, `Alt+l` — Option+H is intercepted in some Mac stacks (window managers, app shortcuts). Use `Alt+Left`/`Alt+Right` instead.
+- `Alt+h` — Option+H is intercepted in some Mac stacks (window managers, hide-app shortcuts). Use `Alt+j` for pane left instead.
 - `Alt+f`, `Alt+b`, `Alt+d`, `Alt+.` — readline word-motion / yank-last-arg in zsh & bash. Binding them in tmux breaks shell editing.
 - `Alt+Enter` — some terminals send this as toggle-fullscreen.
 - `Alt+,`, `Alt+;` — vim default `g,`/`g;` analogues if you remap.
