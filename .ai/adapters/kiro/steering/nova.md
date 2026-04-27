@@ -22,6 +22,10 @@ You are in a NOVA workspace. All rules live in `AGENTS.md` and `.ai/` — this f
 
 #[[file:.ai/adapters/kiro/intellij-mcp.md]]
 
+## Personal-knowledge-management — agent doctrine (always-on)
+
+#[[file:.ai/adapters/_shared/personal-knowledge-management.md]]
+
 ## Anti-duplication
 
 Reference paths (`AGENTS.md:<line>`). Do not copy rule text into chat, code comments, or new steering files. The enforcement contract is `.ai/enforcement.md`.
