@@ -10,7 +10,7 @@ Implements `.ai/enforcement.md` for [Kiro](https://kiro.dev). Generates `.kiro/`
 | **C2** Per-turn re-injection | Hook with `promptSubmit` trigger, shell-command action | `hooks/prompt-submit.sh` + `hooks/prompt-submit.kiro.hook` | `.kiro/hooks/...` |
 | **C3** Scoped rule activation | `inclusion: fileMatch` steering per registered repo | adapters/IDE procedure generator | `.kiro/steering/<repo>.md` |
 | **C5** PKM agent doctrine | `#[[file:...]]` live reference from `steering/nova.md`; always-on. Captures trigger recognition for capture verbs ("capture to inbox", "log to daily", etc.), required first read of the contract on any PKM trigger, viewer-detection (`notes/.obsidian/`) for the every-note-is-a-folder-note override, path discipline, safety guards (vault is gitignored, never proactive). Always-on because triggers fire from cold sessions before any vault declaration exists. | `.ai/adapters/_shared/personal-knowledge-management.md` (shared with Claude) | Pulled inline by `.kiro/steering/nova.md` |
-| **Skills** | Kiro's native `skill://` URI in agent `resources` for progressive loading. Two flavours: framework `nova-*` skills are **copied** by the adapter procedure from `.ai/<name>/SKILL.md` to `.kiro/skills/nova-<name>/SKILL.md`; user skills live at `.ai/workspace/skills/<skill>/SKILL.md`. Repo-worker / dream-worker pre-load both via `skill://.kiro/skills/**/SKILL.md` + `skill://.ai/workspace/skills/**/SKILL.md`. | `.ai/<name>/SKILL.md` (framework, copied) + user-authored | `.kiro/skills/nova-<name>/SKILL.md` (framework copies) + `.ai/workspace/skills/<skill>/SKILL.md` (user) |
+| **Skills** | User skills only — Kiro's native `skill://` URI in agent `resources` points at `.ai/workspace/skills/<skill>/SKILL.md` (gitignored, machine-local). Framework `nova-*` skills stay at `.ai/<name>/SKILL.md` and load via the AGENTS.md "Framework Skills" table reference. The adapter does not write framework skills into the Kiro skills surface. | User-authored under `.ai/workspace/skills/` | Referenced from `agents/*.json` `resources` via `skill://` |
 | **S1** Pre-edit gate (opt-in) | `preToolUse` hook matching `fs_write` returns `exit 2` to block writes under `git-repositories/<repo>/` until that repo's `AGENTS.md` is read this session. Companion `postToolUse` tracker drops a session marker on AGENTS.md reads. | `hooks/pre-edit-gate.sh` + `pre-edit-gate.kiro.hook` + `pre-edit-gate-tracker.sh` + `pre-edit-gate-tracker.kiro.hook` | `.kiro/hooks/...` (opt-in copy) |
 | **S2** Focused subagent | Native Kiro IDE subagent. JSON config (`agents/<name>.json`) restricts tools, pre-loads scoped resources, and sets per-agent UX. Markdown body (`agents/<name>.md`) holds the system prompt; the JSON points at it via `systemPromptFile`. | `agents/repo-worker.{json,md}`, `agents/dream-worker.{json,md}` | `.kiro/agents/...` |
 
@@ -43,19 +43,14 @@ Steering points at `AGENTS.md` and `.ai/` paths — does not reproduce them. The
 
 ## Skills
 
-Kiro loads skills via `skill://` URIs declared in agent `resources`. Two flavours, both progressive-loaded:
+Kiro loads skills via `skill://` URIs declared in agent `resources`. The adapter handles user skills only:
 
-- **Framework skills (`nova-*`)** — source of truth is `.ai/<name>/SKILL.md`. The adapter procedure **copies** each one to `.kiro/skills/nova-<name>/SKILL.md` (see `.ai/adapters/SKILL.md` § Procedure step 7). Single-file copy; body references resolve against `.ai/` workspace-absolute paths. The runtime location is gitignored.
-- **User skills** — adapter's chosen default location is `.ai/workspace/skills/<skill>/SKILL.md` (agentskills.io format, gitignored, machine-local).
+- **User skills** — adapter's chosen default location is `.ai/workspace/skills/<skill>/SKILL.md` (agentskills.io format, gitignored, machine-local). Both `repo-worker.json` and `dream-worker.json` pre-load `skill://.ai/workspace/skills/**/SKILL.md`.
+- **Framework skills (`nova-*`)** — stay at `.ai/<name>/SKILL.md`. They load via the AGENTS.md "Framework Skills" table — that table is auto-injected as steering context every session, so the agent reasons against each skill's `description` to route. No `skill://` URI, no runtime copy.
 
-Both `repo-worker.json` and `dream-worker.json` declare both globs in their `resources`:
+Why no copy: regenerable adapter writes into a user-skill directory create a clobber risk and blur ownership. Framework skills stay framework-owned at their source path; user skills stay user-owned at theirs.
 
-```json
-"skill://.kiro/skills/**/SKILL.md",
-"skill://.ai/workspace/skills/**/SKILL.md"
-```
-
-If you keep user skills somewhere else, update the second glob in the agent JSON configs accordingly. Don't touch the `.kiro/skills/` glob — that's the framework-skill landing zone the adapter procedure populates.
+If you keep user skills somewhere other than `.ai/workspace/skills/`, update the `skill://` glob in the agent JSON configs accordingly.
 
 ## Subagents
 

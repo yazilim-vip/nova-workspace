@@ -70,10 +70,12 @@ Flat reference docs under `.ai/`. Read when context demands.
 
 ## Skills
 
-Two flavours, both [agentskills.io](https://agentskills.io) format. Both load via the host agent's native skills mechanism — the adapter procedure handles the wiring.
+Two flavours, both [agentskills.io](https://agentskills.io) format. They live in different places by design:
 
-- **Framework skills** — shipped with NOVA, source of truth at `.ai/<name>/SKILL.md` (committed), named with the `nova-` prefix (e.g. `nova-dream`, `nova-onboarding`). Listed in the "Framework Skills" table above. The adapter procedure **copies** each into the host's native skills directory (e.g. `.claude/skills/nova-<name>/SKILL.md`, `.kiro/skills/nova-<name>/SKILL.md`) so native trigger matching activates them. Re-run `nova-adapters` to refresh.
-- **User skills** — yours; NOVA prescribes no location. Where they live is **adapter business, not framework business** — each platform's adapter at `.ai/adapters/<platform>/README.md` § "Skills" tells you the path it uses. Use the native location so the host agent's built-in skill loading does the work.
+- **Framework skills** — shipped with NOVA, source of truth at `.ai/<name>/SKILL.md` (committed), named with the `nova-` prefix. Listed in the "Framework Skills" table above. They load via the table reference — that table is auto-loaded into every session, and the agent routes semantically against each skill's `description`. No copy into the host's user-skill directory; framework files don't mingle with user files.
+- **User skills** — yours; NOVA prescribes no location. Where they live is **adapter business, not framework business** — each platform's adapter at `.ai/adapters/<platform>/README.md` § "Skills" tells you the path it uses (e.g. Claude Code reads `.claude/skills/` natively; Kiro references skills via `skill://` URIs in agent configs). Use the native location so the host agent's built-in skill loading does the work.
+
+Why the split: keeping framework and user skills in separate locations makes ownership obvious and prevents a regenerable adapter from accidentally clobbering hand-authored user skills.
 
 **Sharing user skills with a team is a fork-level decision, not a framework one.** Common patterns: commit them in your fork at the adapter's chosen path, keep them in a separate repo and symlink them in, or any other convention that suits the team. NOVA stays out of that choice.
 
