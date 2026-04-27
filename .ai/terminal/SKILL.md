@@ -54,27 +54,21 @@ If you set Claude up under a new emulator, capture the equivalent settings as a 
 |-------------|--------------|--------|
 | tmux        | `.ai/terminal/tmux/` | supported |
 
-More multiplexers get added as they're supported. Multiplexer is optional — Claude works fine without one.
-
-## When to trigger
-
-- "set up tmux", "set up my terminal", "I want a terminal IDE"
-- "what should my .tmux.conf look like for Claude Code"
-- "Shift+Enter doesn't work in Claude inside tmux"
-- "Claude TUI looks broken in my terminal"
-
-For editor setup ("set up neovim", "integrate claudecode.nvim"), see `.ai/ide/SKILL.md`.
+More multiplexers get added as they're supported. A multiplexer is optional — Claude works fine without one. Editor setup (Neovim, IntelliJ) belongs to `.ai/ide/SKILL.md`, not here.
 
 ## Full stack recipe (tmux + Neovim + Ghostty)
 
-This is the recipe most people in this workspace use. Three independently-installable docs, read in this order:
+The most common stack in this workspace. Three independently-installable layers, each swappable:
 
 1. `.ai/terminal/SKILL.md` § "Terminal emulator requirements" *(this file — host-emulator settings)*
-2. `.ai/terminal/tmux/README.md` *(multiplexer)*
+2. `.ai/terminal/tmux/README.md` *(multiplexer; includes an opt-in one-shot bindings block — Alt+i/j/k/l pane focus, Alt+Left/Right windows, etc. — for users who want single-key actions instead of prefix combos)*
 3. `.ai/ide/neovim/README.md` *(editor with `claudecode.nvim` MCP bridge)*
 
-Each layer is independently swappable: nvim without tmux, tmux without nvim, or another emulator in place of Ghostty.
+Substitution menu:
+- nvim without tmux — skip layer 2.
+- tmux without nvim — skip layer 3 (any editor works; nvim just integrates best).
+- Another emulator (iTerm2, Wezterm, Alacritty, Kitty…) — replace Ghostty's settings with the equivalent two: `Shift+Enter` → `\x1b\r`, and Option-as-Alt on macOS.
 
 ## Procedure entry points
 
-Each multiplexer subdir has its own `README.md` describing the stack, install steps, and gotchas. Read the one for the multiplexer you're targeting — or skip the multiplexer entirely if you don't want one.
+Each multiplexer subdir's `README.md` is the install recipe — required settings, plugins, keybinding cheat sheets, gotchas, and any opt-in extras. Read the one for the multiplexer you're targeting, or skip the multiplexer entirely if you don't want one. The host-emulator requirements above (Shift+Enter, Option-as-Alt) apply regardless.
