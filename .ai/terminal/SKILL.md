@@ -3,50 +3,66 @@ name: nova-terminal
 description: Configures the terminal layer of a Claude-Code-friendly dev stack — terminal multiplexer (tmux et al.) and host-emulator settings (Shift+Enter passthrough, meta-as-alt). Use when the user is bootstrapping their terminal setup for NOVA work, or when terminal-side bugs prevent Claude from working correctly (e.g. Shift+Enter typing literal escape sequences). Editor layer (Neovim, IntelliJ) lives under `.ai/ide/`, not here.
 ---
 
-# Terminal
+# nova-terminal
 
-Framework skill — terminal multiplexer + host-emulator setup for a Claude-Code-friendly dev stack. The editor layer (Neovim, IntelliJ, etc.) lives under `.ai/ide/`, not here.
+Configures the terminal layer for Claude Code: host-emulator settings (Shift+Enter, Option-as-Alt) and an optional multiplexer (tmux). Editor configuration is `nova-ide`'s job — defer to `.ai/ide/SKILL.md`.
 
-## Why this exists
+## Instructions
 
-Claude Code's TUI breaks in subtle ways if the terminal layers below it aren't configured right — `Shift+Enter` collapses to plain `Enter`, the notification bell vanishes, the render loop flickers. This procedure owns those settings, separated by layer:
+When invoked, work the procedure in order. Skip steps that are already in place.
 
-- **Terminal emulator** (Ghostty, iTerm2, Alacritty, Wezterm…) — must satisfy a small list of capabilities Claude depends on. See "Terminal emulator requirements" below.
-- **Multiplexer** (tmux, etc.) — must pass those capabilities through to the inner terminal. One subdirectory per multiplexer.
+### 1. Identify the target
 
-## Core principle
+Ask one question if it isn't already obvious from the user's prompt:
 
-**Committed procedure, per-dev artifacts** — same model as `.ai/ide/` and `.ai/adapters/`:
+- **Host-emulator only** (no multiplexer): just steps 2 and 5.
+- **Multiplexer setup** (typically tmux): steps 2 → 3 → 5.
+- **Full stack** (host emulator + tmux + Neovim): steps 2 → 3 → 4 → 5.
 
-- The procedure docs + reference snippets live under `.ai/terminal/<multiplexer>/` — tracked, team-shared.
-- The actual configs live in the developer's home directory (`~/.tmux.conf`, the terminal app's own config) — per-developer, not in this workspace.
+Multiplexer is optional — Claude works fine without one. The host-emulator settings are required regardless.
 
-This procedure does not generate a directory at the workspace root the way `.ai/ide/intellij/` does for `.idea/`.
+### 2. Configure the host emulator
 
-## Anti-duplication rule
+These apply whether or not a multiplexer is used. Read § "Host-emulator requirements" below for the table of required settings and the per-emulator config snippets.
 
-If a rule applies to every NOVA agent, it belongs in `AGENTS.md`. If it applies to every terminal procedure, it belongs here. Multiplexer-specific rules live in that multiplexer's subdirectory — never copied up. Editor-specific rules live under `.ai/ide/<editor>/` — never duplicated here.
+For each requirement, check the user's emulator config and add the missing settings. If the user is on an emulator not listed in § "Tested emulators," ask them to look up the equivalent two settings (Shift+Enter binding, Option-as-Alt) in the emulator's docs. After applying changes, ask the user to fully restart the emulator — most emulators don't reload these settings live.
 
-## Terminal emulator requirements (for Claude Code)
+### 3. Set up the multiplexer
 
-Claude Code needs the host emulator to support a few non-default behaviors. These apply whether or not you use a multiplexer.
+Currently only tmux is supported. Hand off to the multiplexer's subdirectory README — it owns prefix, plugins, keybindings, opt-in extras, and gotchas. Do not duplicate that content here.
+
+- tmux → read `.ai/terminal/tmux/README.md` and follow its install steps.
+
+The tmux README also includes an **opt-in one-shot bindings block** (Alt+i/j/k/l for pane focus, Alt+Left/Right for window navigation, Alt+v/s for splits, etc.) — surface this option to the user; don't apply it without their explicit yes.
+
+### 4. Set up the editor
+
+Out of scope for this skill. Hand off to `nova-ide` (specifically `.ai/ide/neovim/README.md` for the most common Claude-friendly editor stack).
+
+### 5. Verify each layer
+
+- **Host emulator**: ask the user to open a fresh terminal window outside any multiplexer and run `claude`, then press Shift+Enter inside Claude's prompt. It must produce a newline, not submit. If it submits, the emulator setting didn't take — re-check or restart.
+- **Multiplexer**: ask the user to start a tmux session, hit the prefix, and confirm a basic action (e.g. `prefix + v` for vertical split). If `escape-time` was missed, the TUI render flickers — flag and fix.
+- **Editor**: defer to `nova-ide`'s verification.
+
+## Host-emulator requirements (for Claude Code)
+
+Claude Code needs the host emulator to support a few non-default behaviors:
 
 | Requirement | Why |
 |-------------|-----|
-| `Shift+Enter` sends the byte sequence `ESC \r` (i.e. `\x1b\r`), not plain `\r` | So Claude's prompt accepts a multiline newline instead of submitting on `Enter`. |
-| Meta key reachable via Option (macOS) | So `Alt`-prefixed bindings inside Claude (and inside nvim if you use it) work. On macOS this means treating Option as Alt rather than as a compose key. |
+| `Shift+Enter` sends `ESC \r` (i.e. `\x1b\r`), not plain `\r` | So Claude's prompt accepts a multiline newline instead of submitting on `Enter`. |
+| Option-as-Alt on macOS | So `Alt`-prefixed bindings (inside Claude, inside nvim, inside tmux) work. |
 | Modern xterm-compatible terminfo | So `extkeys` passthrough actually negotiates with tmux. |
 
 ### Tested emulators
 
-- **Ghostty** — tested. Set in `~/.config/ghostty/config`:
+- **Ghostty** — set in `~/.config/ghostty/config`:
   ```
   keybind = shift+enter=text:\x1b\r
   macos-option-as-alt = true
   ```
-- Other modern emulators (iTerm2, Wezterm, Alacritty, Kitty) work; consult their docs for the equivalent two settings. NOVA does not prescribe which to use.
-
-If you set Claude up under a new emulator, capture the equivalent settings as a PR to this section.
+- iTerm2, Wezterm, Alacritty, Kitty all support equivalent settings; consult their docs. NOVA does not prescribe a choice. If you set Claude up under a new emulator, capture the equivalent settings as a PR to this section.
 
 ## Supported multiplexers
 
@@ -54,21 +70,21 @@ If you set Claude up under a new emulator, capture the equivalent settings as a 
 |-------------|--------------|--------|
 | tmux        | `.ai/terminal/tmux/` | supported |
 
-More multiplexers get added as they're supported. A multiplexer is optional — Claude works fine without one. Editor setup (Neovim, IntelliJ) belongs to `.ai/ide/SKILL.md`, not here.
-
 ## Full stack recipe (tmux + Neovim + Ghostty)
 
 The most common stack in this workspace. Three independently-installable layers, each swappable:
 
-1. `.ai/terminal/SKILL.md` § "Terminal emulator requirements" *(this file — host-emulator settings)*
-2. `.ai/terminal/tmux/README.md` *(multiplexer; includes an opt-in one-shot bindings block — Alt+i/j/k/l pane focus, Alt+Left/Right windows, etc. — for users who want single-key actions instead of prefix combos)*
-3. `.ai/ide/neovim/README.md` *(editor with `claudecode.nvim` MCP bridge)*
+1. **Host emulator** — § "Host-emulator requirements" (above).
+2. **Multiplexer** — `.ai/terminal/tmux/README.md` (includes the opt-in one-shot bindings block: Alt+i/j/k/l pane focus, Alt+Left/Right windows, etc.).
+3. **Editor** — `.ai/ide/neovim/README.md` (`claudecode.nvim` MCP bridge).
 
 Substitution menu:
 - nvim without tmux — skip layer 2.
-- tmux without nvim — skip layer 3 (any editor works; nvim just integrates best).
-- Another emulator (iTerm2, Wezterm, Alacritty, Kitty…) — replace Ghostty's settings with the equivalent two: `Shift+Enter` → `\x1b\r`, and Option-as-Alt on macOS.
+- tmux without nvim — skip layer 3 (any editor works; nvim integrates best via the MCP bridge).
+- Another emulator — replace Ghostty's settings with the equivalent Shift+Enter binding and Option-as-Alt.
 
-## Procedure entry points
+## Anti-duplication
 
-Each multiplexer subdir's `README.md` is the install recipe — required settings, plugins, keybinding cheat sheets, gotchas, and any opt-in extras. Read the one for the multiplexer you're targeting, or skip the multiplexer entirely if you don't want one. The host-emulator requirements above (Shift+Enter, Option-as-Alt) apply regardless.
+- Multiplexer-specific rules live under `.ai/terminal/<multiplexer>/` — never copied into this file.
+- Editor-specific rules live under `.ai/ide/<editor>/` — never duplicated here.
+- Configs themselves (`~/.tmux.conf`, the emulator's config file) live in the developer's home directory, not in this workspace. This skill produces a procedure and reference snippets, not generated config files.
