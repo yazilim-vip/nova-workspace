@@ -17,6 +17,7 @@ Implements `.ai/enforcement.md` for [Kiro](https://kiro.dev). Generates `.kiro/`
 ## Platform-specific sources of truth
 
 - `terminal.md` — Kiro terminal hang rules. Strict, non-negotiable. Referenced from `steering/nova.md` via `#[[file:...]]` live reference.
+- `steering-discipline.md` — Strict rules preventing Kiro steering files from growing fat: no inlining of `.ai/` content, no preloading learnings, no casual `inclusion: always` additions, no hand-edits of regenerated steering. Referenced from `steering/nova.md` so it's always-on.
 - `hooks/prompt-submit.sh` — shell script that `cat`s the shared checklist (`.ai/adapters/_shared/checklist.md`).
 
 No Kiro-specific rule text lives in steering or hooks beyond what's in these files. Both reference the shared checklist or platform-specific sources; they do not paraphrase NOVA rules.

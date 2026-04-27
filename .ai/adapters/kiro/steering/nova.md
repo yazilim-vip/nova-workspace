@@ -18,6 +18,10 @@ You are in a NOVA workspace. All rules live in `AGENTS.md` and `.ai/` — this f
 
 #[[file:.ai/adapters/kiro/terminal.md]]
 
+## Strict steering discipline (read before editing any `.kiro/steering/` file)
+
+#[[file:.ai/adapters/kiro/steering-discipline.md]]
+
 ## Personal-knowledge-management — agent doctrine (always-on)
 
 #[[file:.ai/adapters/_shared/personal-knowledge-management.md]]
