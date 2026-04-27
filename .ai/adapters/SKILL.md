@@ -1,6 +1,6 @@
 ---
 name: nova-adapters
-description: Set up, generate, or refresh an agent adapter (Claude Code, Kiro, and future platforms). Trigger when the user says "set up <ide> adapter", "generate steering for <ide>", "make NOVA work in <ide>", or when the host agent isn't reading AGENTS.md.
+description: Sets up or refreshes the wiring that lets an agent platform (Claude Code, Kiro) work as a NOVA host — steering files, hooks, subagents, and synced copies of framework skills in the host's native skills directory. Use whenever adapter output is stale, after editing any framework skill, or when the host agent isn't picking up NOVA's rules.
 ---
 
 # Adapters

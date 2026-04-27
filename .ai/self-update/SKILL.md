@@ -1,6 +1,6 @@
 ---
 name: nova-self-update
-description: Sync the local NOVA workspace with upstream — review upstream changes as proposals, never blind-merge. Trigger when the user says "sync with upstream", "pull NOVA updates", "update the workspace", or "review upstream changes before merge".
+description: Syncs the local NOVA workspace with upstream framework changes — fetches, classifies each change, surfaces conflicts, applies or skips with reasons recorded. Treats upstream as proposals, never a blind merge. Use when the upstream NOVA repo has moved ahead of the local workspace and the user wants to absorb (or selectively absorb) those changes.
 ---
 
 # Self-Update

@@ -1,6 +1,6 @@
 ---
 name: nova-dream
-description: Run a NOVA dream pass — review accumulated workspace memory (learnings, drift-log, per-repo AGENTS.md) and propose consolidations. Trigger when the user says "run a dream pass", "tidy up the workspace", "consolidate learnings", or types `/dream`.
+description: Reviews accumulated workspace memory (learnings, drift-log, per-repo AGENTS.md files) and proposes consolidations — dedupes, promotes patterns to higher tiers, archives stale entries. Read-only; user approves before any apply. Use for periodic memory tidying when the workspace feels cluttered or learnings are piling up.
 ---
 
 # Dream

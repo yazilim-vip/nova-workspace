@@ -1,6 +1,6 @@
 ---
 name: nova-onboarding
-description: Guide the user through setting up their local NOVA workspace instance — workspace identity, persona overrides, repository map, infra config. Trigger on first session, missing `.ai/workspace/.initialized`, or when the user says "set up my workspace", "onboard me", or "set up this workspace".
+description: Guides a user through setting up their local NOVA workspace instance — workspace identity, persona overrides, repository map, infra config. Run on first session in a fresh workspace (no `.ai/workspace/.initialized` marker), or whenever the user is bootstrapping NOVA for the first time on a new machine.
 ---
 
 # Workspace Onboarding

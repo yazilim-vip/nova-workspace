@@ -1,6 +1,6 @@
 ---
 name: nova-ide
-description: Set up an IDE's project config — generate IntelliJ `.idea/` modules, register cloned repos, create run configurations, integrate Neovim plugins. Trigger when the user says "set up intellij", "generate idea config", "register repos as intellij modules", "add run configuration for <module>", "set up neovim", or "integrate claudecode.nvim".
+description: Generates IDE project configuration so cloned repos under `git-repositories/` open as native modules — IntelliJ `.idea/` modules, run configurations, Neovim plugins, claudecode.nvim integration. Use when an IDE doesn't see the workspace's repos as projects, or when adding a new repo needs an IDE-side wireup.
 ---
 
 # IDE

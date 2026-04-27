@@ -1,6 +1,6 @@
 ---
 name: nova-terminal
-description: Set up the terminal layer of a Claude-Code-friendly dev stack — terminal multiplexer (tmux et al.) and host-emulator settings (Shift+Enter, etc.). Trigger when the user says "set up tmux", "set up my terminal", "I want a terminal IDE", or "Shift+Enter doesn't work in Claude". Editor layer lives under `.ai/ide/`, not here.
+description: Configures the terminal layer of a Claude-Code-friendly dev stack — terminal multiplexer (tmux et al.) and host-emulator settings (Shift+Enter passthrough, meta-as-alt). Use when the user is bootstrapping their terminal setup for NOVA work, or when terminal-side bugs prevent Claude from working correctly (e.g. Shift+Enter typing literal escape sequences). Editor layer (Neovim, IntelliJ) lives under `.ai/ide/`, not here.
 ---
 
 # Terminal

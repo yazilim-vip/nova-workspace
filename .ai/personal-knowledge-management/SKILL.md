@@ -1,6 +1,6 @@
 ---
 name: nova-personal-knowledge-management
-description: Set up, capture into, or organize the user's personal knowledge vault under `notes/`. Trigger when the user says "set up notes vault", "scaffold my second brain", capture verbs ("capture to inbox", "log to daily", "process inbox"), "what do I know about …", "new bug ticket …", or when editing under `notes/`. Viewer setup ("set up Obsidian for my notes") routes to `.ai/personal-knowledge-management/adapters/<viewer>/README.md`.
+description: Manages the user's personal knowledge vault under `notes/` — vault setup, capture into PARA folders (inbox, daily, projects, areas, resources, archive), retrieval, organization. Covers all read/write activity inside `notes/`. For viewer-specific setup (Obsidian, Foam, etc.) the procedure delegates to `.ai/personal-knowledge-management/adapters/<viewer>/README.md`.
 ---
 
 # Notes

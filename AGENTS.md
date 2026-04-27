@@ -50,15 +50,15 @@ Load root `SOUL.md` when the task demands depth on identity or voice — not on 
 
 Framework-shipped skills in [agentskills.io](https://agentskills.io) format — committed under `.ai/<name>/SKILL.md`, named with the `nova-` prefix to disambiguate from user-authored skills. Read when the specific trigger arises.
 
-| Skill | Path | Load when |
-|-------|------|-----------|
-| nova-onboarding | `.ai/onboarding/SKILL.md` | First session, missing workspace files, "set up my workspace", "onboard me" |
-| nova-self-update | `.ai/self-update/SKILL.md` | "sync with upstream", "pull NOVA updates", reviewing upstream changes before merge |
-| nova-adapters | `.ai/adapters/SKILL.md` | "set up kiro adapter", "generate steering for <ide>", host agent not reading `AGENTS.md` |
-| nova-ide | `.ai/ide/SKILL.md` | "set up intellij", "generate idea config", "register repos as intellij modules", "add run configuration for <module>", "set up neovim", "integrate claudecode.nvim" |
-| nova-terminal | `.ai/terminal/SKILL.md` | "set up tmux", "set up my terminal", "I want a terminal IDE", "Shift+Enter doesn't work in Claude" |
-| nova-dream | `.ai/dream/SKILL.md` | "run a dream pass", "tidy up the workspace", "consolidate learnings", `/dream`, drift-log review |
-| nova-personal-knowledge-management | `.ai/personal-knowledge-management/SKILL.md` | "set up notes vault", "scaffold my second brain", capture verbs ("capture to inbox", "log to daily", "process inbox"), "what do I know about …", "new bug ticket …", editing under `notes/`. Viewer setup ("set up Obsidian for my notes") → `.ai/personal-knowledge-management/adapters/<viewer>/README.md`. |
+| Skill | Path | What it does |
+|-------|------|--------------|
+| nova-onboarding | `.ai/onboarding/SKILL.md` | Bootstraps a fresh workspace — workspace identity, persona, repo map, infra config. |
+| nova-self-update | `.ai/self-update/SKILL.md` | Syncs the local workspace with upstream NOVA changes; classifies each change as a proposal, never a blind merge. |
+| nova-adapters | `.ai/adapters/SKILL.md` | Generates and refreshes the per-platform wiring (steering, hooks, subagents, synced framework skills) that lets a host agent work as a NOVA host. |
+| nova-ide | `.ai/ide/SKILL.md` | Generates IDE project configuration (IntelliJ modules, run configs, Neovim plugins) so cloned repos open as native modules. |
+| nova-terminal | `.ai/terminal/SKILL.md` | Configures the terminal layer for a Claude-Code-friendly dev stack — multiplexer plus host-emulator settings (Shift+Enter, meta-as-alt). |
+| nova-dream | `.ai/dream/SKILL.md` | Reviews accumulated workspace memory and proposes consolidations (dedupe, promote, demote, compact, audit). Read-only. |
+| nova-personal-knowledge-management | `.ai/personal-knowledge-management/SKILL.md` | Manages the user's personal knowledge vault under `notes/` — capture, organize, retrieve. Delegates viewer-specific setup (Obsidian, Foam, etc.) to per-viewer adapters. |
 
 ## Conventions
 
