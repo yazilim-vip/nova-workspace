@@ -10,7 +10,7 @@ Implements `.ai/enforcement.md` for [Claude Code](https://code.claude.com). Gene
 | **C2** Per-turn re-injection | `UserPromptSubmit` hook | `hooks/user-prompt-submit.sh` | `.claude/hooks/user-prompt-submit.sh` |
 | **C3** Scoped rule activation | *Not implemented in the main agent.* Claude Code's only viable mechanism (a subdir `CLAUDE.md` shim) requires writing into someone else's git tree, which NOVA refuses to do. Delegated entirely to **S2** — the `repo-worker` subagent — whose system prompt makes "read the named repo's `AGENTS.md`" its first action. | — | — |
 | **C5** PKM agent doctrine | `@`-imported always-on rules: trigger recognition for capture verbs ("capture to inbox", "log to daily", etc.), required first read of the contract on any PKM trigger, viewer-detection (`notes/.obsidian/`) for the every-note-is-a-folder-note override, path discipline, safety guards (vault is gitignored, never proactive). Always-on because triggers fire from cold sessions before any vault declaration exists. | `.ai/adapters/_shared/personal-knowledge-management.md` (shared with Kiro) | Imported by `steering/CLAUDE.md` → `.claude/CLAUDE.md` |
-| **Skills** | Claude Code's native skills mechanism — agentskills.io-format files at `.claude/skills/<skill>/SKILL.md` (project) or `~/.claude/skills/...` (user). Loaded by Claude Code itself, with native trigger matching. Adapter wires nothing — the path is platform-native. | — | User-authored under `.claude/skills/` |
+| **Skills** | Claude Code's native skills mechanism — agentskills.io-format files at `.claude/skills/<folder>/SKILL.md` (project) or `~/.claude/skills/...` (user). Loaded by Claude Code itself with native trigger matching. The adapter procedure **copies** framework `nova-*` skills from `.ai/<name>/SKILL.md` into `.claude/skills/nova-<name>/SKILL.md` so they activate via the native loader. User skills go under `.claude/skills/<skill>/SKILL.md` directly. | `.ai/<name>/SKILL.md` (framework, copied) + user-authored | `.claude/skills/nova-<name>/SKILL.md` (framework copies) + `.claude/skills/<skill>/SKILL.md` (user) |
 | S1 Pre-edit gate | *(not yet implemented)* | | |
 | **S2** Focused subagent | Native Claude Code subagent (auto-delegated or invoked explicitly) | `agents/repo-worker.md` | `.claude/agents/repo-worker.md` |
 
@@ -79,12 +79,12 @@ Don't add `frontend-repo`, `backend-repo`, etc. speculatively — only when a co
 
 ## Skills
 
-Two flavours, loaded differently:
+Both framework skills and user skills land in `.claude/skills/` and load via Claude Code's native trigger matching. The adapter handles framework skills; the user handles their own.
 
-- **Framework skills (`nova-*`)** — committed at `.ai/<name>/SKILL.md` (e.g. `.ai/dream/SKILL.md`). These do **NOT** live under `.claude/skills/`. They flow through the AGENTS.md `@` import chain (see "How the pointer chain works" above): the agent reads `AGENTS.md`, sees the "Framework Skills" table, loads the relevant `SKILL.md` when its trigger fires. Adapter wires nothing for these — they're framework-shipped.
-- **User skills** — Claude Code natively reads agentskills.io-format files from `.claude/skills/<skill>/SKILL.md` (project, gitignored under our `.claude/`) and `~/.claude/skills/...` (user-scoped, cross-project). Trigger matching, frontmatter, and progressive loading are handled by Claude Code itself. Author user skills directly under `.claude/skills/`.
+- **Framework skills (`nova-*`)** — source of truth is `.ai/<name>/SKILL.md` (committed). The adapter procedure **copies** each one to `.claude/skills/nova-<name>/SKILL.md` (see `.ai/adapters/SKILL.md` § Procedure step 7). Single-file copy, not a directory copy — body references resolve against `.ai/` workspace-absolute paths. Re-running the adapters procedure refreshes the copies. The runtime location is gitignored.
+- **User skills** — author directly under `.claude/skills/<name>/SKILL.md` (project) or `~/.claude/skills/...` (user-scoped). Per `AGENTS.md` § "Skills", NOVA prescribes no location for user skills; this adapter uses Claude's native path.
 
-This adapter does not generate either kind of skill. Per `AGENTS.md` § "Skills", NOVA prescribes no location for user skills; this adapter recommends Claude's native path so you don't pay for a duplicate framework-level mechanism.
+Both flavours share `.claude/skills/` so Claude Code's native loader handles trigger matching, frontmatter, and progressive loading uniformly. The framework prefix (`nova-`) keeps namespaces clean — a user skill named `dream` won't collide with `nova-dream`.
 
 ## Commands
 

@@ -93,14 +93,20 @@ More platforms get added as they're supported.
    - For nested arrays (e.g. `hooks.SessionStart`), append entries — do not replace the array. User-authored hooks must survive the merge.
    - Example: Claude → merge `.ai/adapters/claude/settings-snippet.json` into `.claude/settings.local.json`.
    - Prefer a dry-run diff output to the user before applying if ambiguity exists.
-7. **Generate per-repo artifacts (C3 — scoped rule activation), platform permitting.** For each cloned repo under `git-repositories/` that also appears in `.ai/workspace/map/repos.md`:
+7. **Sync framework skills to the platform's native skills directory.** Every `.ai/<name>/SKILL.md` is a framework skill (see the "Framework Skills" table in `AGENTS.md`). Copy each one — including this file (`.ai/adapters/SKILL.md`) — into the platform's native skills location so the host agent's built-in trigger matching activates them:
+   - **Claude:** `cp .ai/<name>/SKILL.md .claude/skills/nova-<name>/SKILL.md` (one folder per skill, folder name = `nova-<name>`). Claude Code reads `.claude/skills/<folder>/SKILL.md` natively.
+   - **Kiro:** `cp .ai/<name>/SKILL.md .kiro/skills/nova-<name>/SKILL.md`. The Kiro adapter's agent JSONs reference these via `skill://.kiro/skills/**/SKILL.md`.
+   - **Single-file copy only** — do NOT copy the source directory's other contents (e.g. `.ai/onboarding/assets/`, `.ai/adapters/_shared/`, `.ai/adapters/claude/`). Framework SKILL.md bodies reference assets with workspace-absolute paths (`.ai/<name>/assets/foo.md`), so the runtime copy resolves them correctly against the original sources.
+   - Idempotency: if the target SKILL.md exists and matches the source byte-for-byte, do nothing. Framework skills are framework-owned (not user-edited), so on any difference, overwrite.
+   - The runtime copies are gitignored along with the rest of `.claude/` / `.kiro/`.
+8. **Generate per-repo artifacts (C3 — scoped rule activation), platform permitting.** For each cloned repo under `git-repositories/` that also appears in `.ai/workspace/map/repos.md`:
    - **Claude:** *no per-repo file is written.* Claude Code's only auto-load mechanism inside a repo would be a subdir `CLAUDE.md` shim, but writing into someone else's git-tracked tree creates persistent untracked-file noise and forces every cloned repo to gitignore the generated path. NOVA explicitly does NOT do that. C3 is delegated on Claude to **S2 — the `repo-worker` subagent** (a fresh-context agent the caller invokes with the target repo name; its system prompt makes "read this repo's `AGENTS.md`" its first action). For ad-hoc sessions in the main agent, the Navigation Protocol step 4 ("Enter the project — read its `AGENTS.md`") is followed manually.
    - **Kiro:** render `.ai/adapters/kiro/templates/repo-steering.md` → `.kiro/steering/<slug>.md` where `<slug>` is the repo's path with `/` replaced by `-`. Kiro's `inclusion: fileMatch` mechanism is workspace-scoped (lives entirely under `.kiro/`) and never touches `git-repositories/<repo>/`, so it's safe.
    - Skip repos in `repos.md` that aren't cloned. Warn on repos that are cloned but missing from `repos.md`.
    - Idempotency: if the target file already exists and matches the template, do nothing. If it differs (user edited), show the diff and confirm before overwriting.
    - **Hard rule (all platforms): the adapters procedure MUST NOT write inside `git-repositories/<repo>/`.** Every adapter artifact lives under the workspace root (`.claude/`, `.kiro/`, etc.). If a future capability "needs" to write into a cloned repo, it has to ship as a separate, opt-in procedure with explicit per-repo consent — not as part of the default adapters flow.
-8. **Verify `.gitignore`.** The platform's output directory must be gitignored at the workspace root. If it's not, add it and tell the user.
-9. **Report.** Tell the user what was generated, where, and how to test it:
+9. **Verify `.gitignore`.** The platform's output directory must be gitignored at the workspace root. If it's not, add it and tell the user.
+10. **Report.** Tell the user what was generated, where, and how to test it:
    - Restart the agent.
    - Open a chat; confirm the agent references NOVA's files rather than repeating their contents.
    - For per-turn hooks: ask the agent "was a NOVA checklist injected this turn?" — a yes confirms C2 is wired.

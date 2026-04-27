@@ -70,10 +70,10 @@ Flat reference docs under `.ai/`. Read when context demands.
 
 ## Skills
 
-Two flavours, both [agentskills.io](https://agentskills.io) format:
+Two flavours, both [agentskills.io](https://agentskills.io) format. Both load via the host agent's native skills mechanism — the adapter procedure handles the wiring.
 
-- **Framework skills** — shipped with NOVA, committed at `.ai/<name>/SKILL.md`, named with the `nova-` prefix (e.g. `nova-dream`, `nova-onboarding`). Listed in the table above; loaded via `AGENTS.md` reference.
-- **User skills** — yours; NOVA prescribes no location. Where they live is **adapter business, not framework business** — each platform has its own native skills mechanism, and the adapter at `.ai/adapters/<platform>/README.md` § "Skills" tells you the path it uses (e.g. Claude Code reads `.claude/skills/` natively; Kiro references skills via `skill://` URIs in agent configs). Use the native location so the host agent's built-in skill loading does the work.
+- **Framework skills** — shipped with NOVA, source of truth at `.ai/<name>/SKILL.md` (committed), named with the `nova-` prefix (e.g. `nova-dream`, `nova-onboarding`). Listed in the "Framework Skills" table above. The adapter procedure **copies** each into the host's native skills directory (e.g. `.claude/skills/nova-<name>/SKILL.md`, `.kiro/skills/nova-<name>/SKILL.md`) so native trigger matching activates them. Re-run `nova-adapters` to refresh.
+- **User skills** — yours; NOVA prescribes no location. Where they live is **adapter business, not framework business** — each platform's adapter at `.ai/adapters/<platform>/README.md` § "Skills" tells you the path it uses. Use the native location so the host agent's built-in skill loading does the work.
 
 **Sharing user skills with a team is a fork-level decision, not a framework one.** Common patterns: commit them in your fork at the adapter's chosen path, keep them in a separate repo and symlink them in, or any other convention that suits the team. NOVA stays out of that choice.
 

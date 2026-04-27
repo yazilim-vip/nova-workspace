@@ -9,6 +9,7 @@
     "file://.ai/workspace/AGENTS.md",
     "file://.ai/workspace/map/repos.md",
     "file://.ai/adapters/kiro/terminal.md",
+    "skill://.kiro/skills/**/SKILL.md",
     "skill://.ai/workspace/skills/**/SKILL.md"
   ],
   "tools": [

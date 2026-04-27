@@ -9,7 +9,7 @@ Framework skill — gets a fresh NOVA workspace configured for the local user.
 
 Guide the user through setting up their local workspace instance via conversation. At the end, generate the workspace instance files from their answers.
 
-See [assets/example-dialogue.md](assets/example-dialogue.md) for a full example conversation — shape reference only, not a script.
+See [.ai/onboarding/assets/example-dialogue.md](.ai/onboarding/assets/example-dialogue.md) for a full example conversation — shape reference only, not a script.
 
 ## When to Trigger
 
