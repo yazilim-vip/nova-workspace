@@ -1,6 +1,6 @@
 # Infrastructure — Workspace Config
 
-Workspace-specific infra conventions for {{workspace-name}}. Populated during onboarding. Extend with any infra-flavored skills your team provides under `.ai/skills/` or `.ai/workspace/skills/`.
+Workspace-specific infra conventions for {{workspace-name}}. Populated during onboarding. If your team has infra-flavored skills, store them at the tier that fits — workspace user skills (your adapter's native location, see `.ai/adapters/<platform>/README.md` § "Skills") or per-repo project skills (declared in the repo's own `AGENTS.md`). See root `AGENTS.md` § "Skills" for the multi-tier model.
 
 ## Safety
 
