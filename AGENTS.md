@@ -30,7 +30,7 @@ Work like a strategy game — start with fog of war, reveal context as you go.
 3. **Find the target** — read `.ai/workspace/map/repos.md` to locate the repo.
 4. **Enter the project** — navigate to the repo, read its `AGENTS.md`.
 5. **Go deeper** — if working in a subfolder, check for a subfolder `AGENTS.md` and `.ai/` directory.
-6. **Load skills** — via your platform's native skills mechanism. Each adapter at `.ai/adapters/<platform>/README.md` § "Skills" names its location. For workspace-specific infra rules, read `.ai/workspace/infra.md`.
+6. **Load skills** — framework skills (`nova-*`) are in the "Framework Skills" table below; load on trigger. User skills load via your platform's native skills mechanism — each adapter at `.ai/adapters/<platform>/README.md` § "Skills" names its location. For workspace-specific infra rules, read `.ai/workspace/infra.md`.
 7. **Check learnings** — scan `.ai/workspace/learnings/` for relevant accumulated knowledge.
 
 Never load everything upfront. Discover context as the task demands it.

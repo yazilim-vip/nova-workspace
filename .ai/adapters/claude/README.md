@@ -79,9 +79,12 @@ Don't add `frontend-repo`, `backend-repo`, etc. speculatively — only when a co
 
 ## Skills
 
-Claude Code natively reads agentskills.io-format skills from `.claude/skills/<skill>/SKILL.md` (project-scoped, gitignored under our `.claude/`) and `~/.claude/skills/...` (user-scoped, cross-project). Trigger matching, frontmatter, and progressive loading are handled by Claude Code itself.
+Two flavours, loaded differently:
 
-This adapter does not wire skills — there is nothing to generate. Author skills directly under `.claude/skills/` and Claude will pick them up at session start. Per `AGENTS.md` § "Skills", NOVA prescribes no location; this adapter recommends Claude's native path so you don't pay for a duplicate framework-level mechanism.
+- **Framework skills (`nova-*`)** — committed at `.ai/<name>/SKILL.md` (e.g. `.ai/dream/SKILL.md`). These do **NOT** live under `.claude/skills/`. They flow through the AGENTS.md `@` import chain (see "How the pointer chain works" above): the agent reads `AGENTS.md`, sees the "Framework Skills" table, loads the relevant `SKILL.md` when its trigger fires. Adapter wires nothing for these — they're framework-shipped.
+- **User skills** — Claude Code natively reads agentskills.io-format files from `.claude/skills/<skill>/SKILL.md` (project, gitignored under our `.claude/`) and `~/.claude/skills/...` (user-scoped, cross-project). Trigger matching, frontmatter, and progressive loading are handled by Claude Code itself. Author user skills directly under `.claude/skills/`.
+
+This adapter does not generate either kind of skill. Per `AGENTS.md` § "Skills", NOVA prescribes no location for user skills; this adapter recommends Claude's native path so you don't pay for a duplicate framework-level mechanism.
 
 ## Commands
 
