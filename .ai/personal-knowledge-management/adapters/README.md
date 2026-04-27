@@ -27,7 +27,6 @@ To use no viewer, skip this directory entirely. The vault is fully usable as pla
 ## When to trigger
 
 - "set up Obsidian for my notes", "wire Obsidian to my vault" → `obsidian/README.md`
-- "wire shell-command hotkeys for notes" → typically `obsidian/README.md` (the `taitava/obsidian-shellcommands` plugin lives there)
 - Equivalent phrasings for any other viewer once added
 
 ## Adding a viewer

@@ -28,7 +28,7 @@ If a rule applies to every NOVA agent, it belongs in root `AGENTS.md`. If it app
 - "open today", "new bug ticket …"
 - Editing under `notes/` at the workspace root
 
-For viewer setup ("set up Obsidian for my notes", "wire shell-command hotkeys"), the agent reads the matching adapter under `.ai/personal-knowledge-management/adapters/<viewer>/`.
+For viewer setup ("set up Obsidian for my notes"), the agent reads the matching adapter under `.ai/personal-knowledge-management/adapters/<viewer>/`.
 
 ## Distinct from other knowledge stores
 

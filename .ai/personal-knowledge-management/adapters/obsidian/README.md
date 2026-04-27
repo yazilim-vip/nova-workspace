@@ -1,6 +1,6 @@
 # Notes — Obsidian adapter
 
-Obsidian-specific setup for the `notes/` vault contract (`.ai/personal-knowledge-management/README.md`). This adapter owns: required Obsidian plugins, vault settings, the **every-note-is-a-folder-note** rule that activates when Obsidian is in use, terminal/shell-commands wiring, and Obsidian-specific link extensions.
+Obsidian-specific setup for the `notes/` vault contract (`.ai/personal-knowledge-management/README.md`). This adapter owns: required Obsidian plugins, vault settings, the **every-note-is-a-folder-note** rule that activates when Obsidian is in use, in-Obsidian terminal wiring, and Obsidian-specific link extensions.
 
 > **Anti-duplication.** This file owns *what's specific to Obsidian*. The vault layout (PARA, frontmatter schema, folder-notes layout convention, capture vocabulary) lives in `.ai/personal-knowledge-management/README.md` — never restated here.
 
@@ -18,7 +18,6 @@ The vault works without Obsidian — this adapter is opt-in.
 User-triggered. Phrases:
 
 - "set up Obsidian for my notes", "wire Obsidian to my vault"
-- "wire shell-command hotkeys" (when an Obsidian vault is already in use)
 
 The agent reads this file and runs the scaffold below.
 
@@ -82,13 +81,39 @@ The contract's capture verbs (`.ai/personal-knowledge-management/README.md` § A
 
 ## Required community plugins
 
-| Plugin | Repo | Plugin ID | Why |
-|---|---|---|---|
-| Folder Notes | [`LostPaul/obsidian-folder-notes`](https://github.com/LostPaul/obsidian-folder-notes) | `folder-notes` | Implements the every-note-is-a-folder-note UX. The plugin's own folder-note name template is `{{folder_name}}` — same as our convention. |
-| Terminal | [`polyipseity/obsidian-terminal`](https://github.com/polyipseity/obsidian-terminal) | `terminal` | Agent CLI inside the vault — primary invocation surface while in Obsidian. |
-| Shell commands | [`taitava/obsidian-shellcommands`](https://github.com/Taitava/obsidian-shellcommands) | `shellcommands` | Bind agent actions to hotkeys/palette with note context (`{{selection}}`, `{{file_path}}`, `{{vault_path}}`). |
+You install these manually, once per machine — Obsidian does not script community-plugin installs.
 
-Enable: Settings → Community plugins → turn off Restricted mode → install + enable. Obsidian does not script community-plugin installs; this is a one-time manual step per machine.
+### One-time prep
+
+1. Open Obsidian with the `notes/` vault.
+2. Settings → Community plugins → click **Turn on community plugins** (this disables Restricted mode for this vault).
+
+### Install each plugin
+
+For each plugin in the table below: Settings → Community plugins → **Browse** → search the **exact display name** → click the matching tile (verify **author** matches) → **Install** → **Enable**.
+
+The fastest path is the deeplink — clicking it from any browser opens the plugin's listing inside your active Obsidian vault, ready to install:
+
+| # | Plugin (display name) | Author (as shown in Obsidian) | Plugin id | Deeplink | Why we need it |
+|---|---|---|---|---|---|
+| 1 | **Folder notes** | **Lost Paul** | `folder-notes` | [obsidian://show-plugin?id=folder-notes](obsidian://show-plugin?id=folder-notes) | Implements the every-note-is-a-folder-note UX. Default folder-note name template `{{folder_name}}` matches our `<folder>/<folder>.md` convention. |
+| 2 | **Terminal** | **polyipseity** | `terminal` | [obsidian://show-plugin?id=terminal](obsidian://show-plugin?id=terminal) | Agent CLI inside the vault — invocation surface while working in Obsidian. Open a terminal pane (ribbon icon or command palette) and run agent commands directly. |
+
+### Disambiguation — Folder notes search returns multiple results
+
+Searching "folder notes" in Obsidian's Community plugins browser returns **three** plugins. Install only the **first** one in this list; the others are older or related:
+
+| Tile you'll see | Author | Action |
+|---|---|---|
+| **Folder notes** | Lost Paul | ✅ **Install this one.** |
+| Folder Note Plugin | xpgo | ❌ Skip. Older plugin; we previously referenced this and migrated. |
+| Alx Folder Note | aidenlx | ❌ Skip. Different lineage; requires the `folder-note-core` plugin. |
+
+### Verify each installed correctly
+
+After install + enable, the plugin appears under Settings → Community plugins → **Installed plugins** with a toggle that's switched **on**. The Folder notes plugin also adds a "Folder notes" entry to the settings sidebar. Terminal adds a ribbon icon (the terminal glyph) and a `terminal` command to the command palette.
+
+If a plugin appears installed but disabled, toggle it on. If it doesn't appear at all, the install failed — try **Browse → search → Install** again.
 
 ## Skip these (agent-driven, not user-driven)
 
@@ -127,23 +152,13 @@ These are the settings under Settings → Community plugins → Folder notes tha
 
 ## Terminal plugin config
 
+Settings → Community plugins → Terminal:
+
 - **Shell**: `/bin/zsh -l` — `-l` forces a login shell so `.zshrc` / `.zprofile` source and the agent CLI resolves on PATH.
 - **Working directory**: vault root.
 - **Why**: Obsidian launches with a minimal env. Without `-l`, your shell's PATH and tooling are not loaded, and the agent CLI fails to resolve.
 
-## Shell commands plugin patterns
-
-The plugin runs shell invocations bound to hotkeys/palette entries. The exact CLI is **agent-specific** — the agent generates the JSON for itself when the user asks ("wire the shell-command hotkeys"). Patterns are coding-agent-agnostic:
-
-| Pattern | Note context | Behavior |
-|---|---|---|
-| Capture selection to inbox | `{{selection}}` | New folder note under `notes/inbox/<auto-name>/<auto-name>.md` with the selection as body. |
-| Append selection to today's daily | `{{selection}}` | Append to today's `notes/daily/YYYY-MM-DD/YYYY-MM-DD.md` (create the daily folder note if missing). |
-| Send selection to agent (in-place) | `{{selection}}` | Agent processes selection; output replaces selection or is appended below. |
-| Process current note | `{{file_path}}` | Agent reads the file, applies a transform (summarize, file, extract action items). |
-| Process inbox | none | Agent runs the inbox-processing flow over inbox folder notes. |
-
-When asked to wire these up, the agent generates the matching JSON for `taitava/obsidian-shellcommands` using its own CLI and the user's preferred hotkeys.
+Invoke the agent by opening a Terminal pane (ribbon icon, or command palette → "Terminal: Open in panel") and typing the agent CLI directly. Capture verbs (`capture to inbox`, `log to daily`, `process inbox`, etc.) are passed in as agent input — see contract § Agent capture vocabulary.
 
 ## Obsidian-flavored extensions to the contract's link syntax
 
@@ -162,14 +177,13 @@ These are still markdown — degrade gracefully in viewers that don't render the
 1. Verify `notes/` exists per the contract's scaffold (run that first if not).
 2. Create `notes/.obsidian/` with:
    - `app.json` — vault settings table above.
-   - `community-plugins.json` — `["folder-notes", "terminal", "shellcommands"]`.
+   - `community-plugins.json` — `["folder-notes", "terminal"]`.
    - `core-plugins.json` — disable Daily Notes, Templates, Templater (they conflict with agent ownership).
 3. Convert any pre-existing flat notes in the vault to folder notes (move `note.md` → `note/note.md`). Skip notes already in folder-note shape.
-4. Print the manual checklist for the user:
-   - Install the three community plugins via Obsidian UI (Restricted mode → off).
+4. Print the manual checklist for the user (per § Required community plugins):
+   - Install **Folder notes** (Lost Paul) and **Terminal** (polyipseity) via the deeplinks in the table.
    - Configure Terminal plugin: `/bin/zsh -l`, working dir = vault root.
-   - Configure Folder Notes plugin per § Folder Notes plugin config — most defaults are correct; verify "Storage location" is **Inside the folder** and "Auto-create folder note when creating new folder" is **On**.
-   - Optionally ask the agent to "wire the shell-command hotkeys" for the catalog of patterns.
+   - Configure Folder notes plugin per § Folder Notes plugin config — most defaults are correct; verify "Storage location" is **Inside the folder** and "Auto-create folder note when creating new folder" is **On**.
 
 The agent does not assume the user wants Obsidian opened automatically — it leaves that to the user.
 
@@ -187,5 +201,4 @@ The agent does not assume the user wants Obsidian opened automatically — it le
 - `.ai/personal-knowledge-management/adapters/README.md` — viewer adapter index.
 - [LostPaul/obsidian-folder-notes](https://github.com/LostPaul/obsidian-folder-notes) — Folder Notes plugin repo.
 - [Folder Notes plugin docs](https://lostpaul.github.io/obsidian-folder-notes/) — settings reference.
-- [polyipseity/obsidian-terminal](https://github.com/polyipseity/obsidian-terminal)
-- [taitava/obsidian-shellcommands](https://github.com/Taitava/obsidian-shellcommands)
+- [polyipseity/obsidian-terminal](https://github.com/polyipseity/obsidian-terminal) — Terminal plugin repo.
