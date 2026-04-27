@@ -70,14 +70,13 @@ Flat reference docs under `.ai/`. Read when context demands.
 
 ## Skills
 
-Two flavours, both [agentskills.io](https://agentskills.io) format. They live in different places by design:
+All skills are [agentskills.io](https://agentskills.io) format. Skills can live at any tier of the workspace hierarchy — NOVA prescribes paths only for framework-shipped skills; everything else is your call.
 
-- **Framework skills** — shipped with NOVA, source of truth at `.ai/<name>/SKILL.md` (committed), named with the `nova-` prefix. Listed in the "Framework Skills" table above. They load via the table reference — that table is auto-loaded into every session, and the agent routes semantically against each skill's `description`. No copy into the host's user-skill directory; framework files don't mingle with user files.
-- **User skills** — yours; NOVA prescribes no location. Where they live is **adapter business, not framework business** — each platform's adapter at `.ai/adapters/<platform>/README.md` § "Skills" tells you the path it uses (e.g. Claude Code reads `.claude/skills/` natively; Kiro references skills via `skill://` URIs in agent configs). Use the native location so the host agent's built-in skill loading does the work.
+- **Framework skills** — shipped with NOVA, source of truth at `.ai/<name>/SKILL.md` (committed), named with the `nova-` prefix. Listed in the "Framework Skills" table above. They load via the table reference, which is auto-loaded into every session.
+- **Workspace user skills** — generic, cross-repo skills you write yourself. NOVA prescribes no location. Common patterns: host-native location (e.g. `.claude/skills/` for Claude Code, picked up by the native loader), `.ai/workspace/skills/`, or wherever else suits you. Each platform's adapter at `.ai/adapters/<platform>/README.md` § "Skills" describes the native path. Sharing with a team is a fork-level decision (commit at the chosen path, separate skills repo, symlink, etc.).
+- **Project skills** — domain-specific skills owned by one repo. Declared in the repo's own `AGENTS.md` (in a Skills table) and stored wherever that repo chooses — `<repo>/.ai/skills/<name>/SKILL.md` is a common convention but not required. Auto-loaded when the agent enters the repo (Navigation Protocol step 4 reads the repo's `AGENTS.md`, which references the skills). Same skill name (`deploy`, `test`, `migrate`) can mean different things in different repos because scope is location-disambiguated.
 
-Why the split: keeping framework and user skills in separate locations makes ownership obvious and prevents a regenerable adapter from accidentally clobbering hand-authored user skills.
-
-**Sharing user skills with a team is a fork-level decision, not a framework one.** Common patterns: commit them in your fork at the adapter's chosen path, keep them in a separate repo and symlink them in, or any other convention that suits the team. NOVA stays out of that choice.
+Pick whichever tier(s) fit your workflow. Mix freely. The Navigation Protocol's existing AGENTS.md walk handles discovery — no copy step, no global registry.
 
 ### Workspace infra
 

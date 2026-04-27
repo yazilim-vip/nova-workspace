@@ -8,7 +8,9 @@ This is a framework convention, not a skill — the agent reads it when creating
 
 A **project** is one repo, one logical code unit. It has its own `AGENTS.md`, optionally an `.ai/` directory, and optionally subfolder `AGENTS.md` files for submodules with distinct rules.
 
-Cross-project concerns — skills, safety rules, repo maps, infra conventions — belong to the **workspace**, not the project. If you need to coordinate across multiple repos, that's a workspace (see `.ai/onboarding/`), not a "multi-repo project." No nested workspaces.
+Cross-project concerns — safety rules, repo maps, infra conventions, and skills that apply to *every* repo — belong to the **workspace**, not the project. If you need to coordinate across multiple repos, that's a workspace (see `.ai/onboarding/`), not a "multi-repo project." No nested workspaces.
+
+Project-specific skills are different — they belong inside the project. Same skill name (`deploy`, `test`, `migrate`) can mean different things across repos because scope is location-disambiguated. See § "Project Skills" below.
 
 ## AGENTS.md Hierarchy
 
@@ -45,7 +47,32 @@ Only create subdirs the project actually needs.
 - `.ai/` is the single directory for all AI/agent content — no tool-specific files inside it
 - No tool-specific files in `.ai/` — conventions must be tool-agnostic
 - Fog-of-war applies to subfolders — each folder level is part of the navigation chain
-- `.skills/` is deprecated — migrate contents to `.ai/skills/`
+
+## Project Skills
+
+A project can ship its own skills — domain-specific procedures that only make sense inside that repo (`deploy`, `seed-data`, `migrate`, etc.). These live alongside the code, declared in the project's `AGENTS.md`, auto-loaded by the agent when it enters the repo (Navigation Protocol step 4).
+
+**Format.** [agentskills.io](https://agentskills.io) — a `SKILL.md` file with YAML frontmatter (`name`, `description`).
+
+**Location.** The repo's choice. `<repo>/.ai/skills/<name>/SKILL.md` is a common convention but not required. NOVA prescribes nothing here; pick what fits your project.
+
+**Declaration.** Add a "Skills" section to the project's `AGENTS.md` listing each skill. Example:
+
+```markdown
+## Skills
+
+| Skill | Path | What it does |
+|-------|------|--------------|
+| deploy | `.ai/skills/deploy/SKILL.md` | Builds the Helm chart and applies to the staging cluster. |
+| seed-data | `.ai/skills/seed-data/SKILL.md` | Populates the local dev DB from `fixtures/`. |
+```
+
+The agent reads this table when it enters the repo and loads each skill on demand.
+
+**Scope discipline.**
+- Project skills should be specific to the project. If a skill is generic across repos, lift it to the workspace (see workspace `AGENTS.md` § "Skills").
+- A project skill named `deploy` is unrelated to a different project's `deploy` — they're scope-isolated. The agent loads the right one based on which repo it's currently in.
+- Keep skill descriptions agentic — describe what the skill *does*, not what trigger phrases activate it.
 
 ## Tool Adapters
 
@@ -68,7 +95,6 @@ When entering a project for the first time or when asked to validate:
 1. Check if the project has an `AGENTS.md`
 2. Validate it aligns with project conventions (this doc) and workspace conventions (the parent workspace)
 3. If missing or non-compliant, offer to scaffold from the template below
-4. If the project has a `.skills/` directory, migrate it to `.ai/skills/`
 
 ## What Belongs in a Project AGENTS.md
 
@@ -77,11 +103,12 @@ When entering a project for the first time or when asked to validate:
 - **Build & Run** — how to build, test, run locally
 - **Key Paths** — important files and directories
 - **Project Rules** — rules specific to this project (not workspace rules)
+- **Skills** — project-specific skills (see § "Project Skills" above). Optional; only if the project has any.
 - **Dependencies** — related repos, external services
 
 ## What Does NOT Belong
 
-- Workspace-level concerns (skills index, cross-project safety rules, repo map)
+- Workspace-level concerns (cross-project safety rules, repo map, framework skills)
 - References to sibling projects (each project must be self-contained)
 - Ephemeral task details
 - Secrets or credentials
@@ -128,6 +155,14 @@ Starter `AGENTS.md` for a new project. Fill in the `{{placeholders}}`; delete se
 ## Project Rules
 
 {{Project-specific rules on top of workspace conventions. Delete this section if none.}}
+
+## Skills
+
+{{Project-specific skills, agentskills.io format. Delete this section if the project has no skills of its own.}}
+
+| Skill | Path | What it does |
+|-------|------|--------------|
+| {{name}} | {{path/to/SKILL.md}} | {{one-line semantic description}} |
 
 ## Dependencies
 
