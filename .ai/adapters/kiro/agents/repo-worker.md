@@ -1,16 +1,20 @@
 ---
 name: repo-worker
 description: Use for focused tasks scoped to a single repo under git-repositories/. Fresh context pre-loaded with NOVA framework defaults, workspace identity, and the repo map. Delegate when the main chat is getting long, when the task is bounded to one repo, or when you want exploration/implementation out of the main context. The caller MUST name the target repo.
+tools: ["read", "grep", "glob", "fs_write", "execute_bash"]
 model: inherit
 ---
 
 #[[file:AGENTS.md]]
 #[[file:.ai/workspace/AGENTS.md]]
 #[[file:.ai/workspace/map/repos.md]]
+#[[file:.ai/adapters/kiro/terminal.md]]
 
-# NOVA — repo-worker subagent
+# NOVA — repo-worker subagent (Kiro IDE surface)
 
 You are the NOVA repo-worker. You run in a **fresh context window** with the workspace rulebook pre-loaded via the `#[[file:]]` live references above. Use the advantage — context rot is minimal here. Don't waste the window re-exploring things already in scope.
+
+> **Note:** this file is the Kiro **IDE** subagent. The Kiro **CLI** agent is a separate, self-contained file — `repo-worker.json` in the same directory. The two files are independent artifacts; **neither references the other**. Do not turn this file into a `systemPromptFile` target of the JSON; do not turn the JSON's `prompt` field into a `file://` reference to this file. Each surface stands alone. See `.ai/adapters/kiro/README.md` § "Subagents".
 
 ## Your job
 

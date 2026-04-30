@@ -13,7 +13,7 @@ Implements `.ai/enforcement.md` for [Kiro](https://kiro.dev). Generates `.kiro/`
 | **C5** PKM agent doctrine | `#[[file:...]]` live reference from `steering/nova.md`; always-on. Captures trigger recognition for capture verbs ("capture to inbox", "log to daily", etc.), required first read of the contract on any PKM trigger, viewer-detection (`notes/.obsidian/`) for the every-note-is-a-folder-note override, path discipline, safety guards (vault is gitignored, never proactive). Always-on because triggers fire from cold sessions before any vault declaration exists. | `.ai/adapters/_shared/personal-knowledge-management.md` (shared with Claude) | Pulled inline by `.kiro/steering/nova.md` |
 | **Skills** | See **C4** above — Kiro reads `.ai/workspace/skills/` directly via `skill://` URIs in agent JSON `resources`, so no mirror is written. Framework `nova-*` skills stay at `.ai/<name>/SKILL.md` and load via the AGENTS.md "Framework Skills" table reference. The adapter does not write framework skills into the Kiro skills surface. | User-authored under `.ai/workspace/skills/` | Referenced from `agents/*.json` `resources` via `skill://` |
 | **S1** Pre-edit gate (opt-in) | `preToolUse` hook matching `fs_write` returns `exit 2` to block writes under `git-repositories/<repo>/` until that repo's `AGENTS.md` is read this session. Companion `postToolUse` tracker drops a session marker on AGENTS.md reads. | `hooks/pre-edit-gate.md` + `pre-edit-gate.kiro.hook` + `hooks/pre-edit-gate-tracker.md` + `pre-edit-gate-tracker.kiro.hook` (bash extracted at install) | `.kiro/hooks/...` (opt-in copy) |
-| **S2** Focused subagent | Native Kiro IDE subagent. JSON config (`agents/<name>.json`) restricts tools, pre-loads scoped resources, and sets per-agent UX. Markdown body (`agents/<name>.md`) holds the system prompt; the JSON points at it via `systemPromptFile`. | `agents/repo-worker.{json,md}`, `agents/dream-worker.{json,md}` | `.kiro/agents/...` |
+| **S2** Focused subagent | Two **independent** files per agent — one per Kiro surface, never paired. **Kiro CLI:** `agents/<name>.json` is fully self-contained — `prompt` field holds the inlined system prompt as a string; `resources`, `tools`, `toolsSettings`, `welcomeMessage`, `model` configure the agent. **Kiro IDE:** `agents/<name>.md` is fully self-contained — YAML frontmatter (`name`, `description`, `tools`, `model`) plus body for the system prompt; `#[[file:...]]` for IDE-side live file references. The two files MUST NOT cross-reference (no `systemPromptFile`, no `prompt: "file://<n>.md"`). | `agents/repo-worker.json`, `agents/repo-worker.md`, `agents/dream-worker.json`, `agents/dream-worker.md` | `.kiro/agents/...` |
 
 ## Platform-specific sources of truth
 
@@ -55,23 +55,34 @@ If you keep user skills somewhere other than `.ai/workspace/skills/`, update the
 
 ## Subagents
 
-Each subagent ships as a **paired** `.json` config + `.md` system prompt. The JSON enforces capabilities the markdown frontmatter cannot — tool restriction, path-scoped `fs_write`, pre-loaded resources via `file://` and `skill://` URIs, welcome message. The markdown holds the prompt body and is referenced from the JSON via `systemPromptFile`.
+**Two surfaces, two independent files per agent — never paired.**
 
-Reference: [Kiro agent config schema](https://kiro.dev/docs/agents) — `tools`, `toolsSettings`, `resources` (with `skill://` for progressive loading), `welcomeMessage`, `keyboardShortcut`, `mcpServers`.
+Kiro has two distinct agent surfaces (verified against [Kiro CLI agent configuration reference](https://kiro.dev/docs/cli/custom-agents/configuration-reference/) and [Kiro IDE subagents docs](https://kiro.dev/docs/chat/subagents/)):
 
-### `agents/repo-worker.{json,md}`
+- **Kiro CLI** reads `.kiro/agents/<name>.json` — JSON file with the system prompt inlined as the `prompt` field (string). All config (`resources`, `tools`, `toolsSettings`, `welcomeMessage`, `keyboardShortcut`, `model`, `mcpServers`, `includeMcpJson`, `toolAliases`, `allowedTools`, `hooks`) lives in the JSON. The file is **self-contained** — no external prompt body.
+- **Kiro IDE** reads `.kiro/agents/<name>.md` — Markdown file with YAML frontmatter (`name`, `description`, `tools`, `model`, `includeMcpJson`, `includePowers`) and the system prompt as the body. `#[[file:...]]` directives in the body do IDE-side live file references. The file is **self-contained** — no external JSON config.
 
-Generic archetype for tasks scoped to one repo under `git-repositories/`. Pre-loads framework + workspace + repo-map + Kiro terminal rules via `file://` resources, plus all workspace skills via `skill://` (progressive). `fs_write` is path-scoped to `git-repositories/**` and `scripts/**` — cannot accidentally write workspace-level files. Reads the target repo's own `AGENTS.md` as its first action. Fresh context → zero rot.
+Both surfaces share the directory `.kiro/agents/`; Kiro disambiguates by file extension. **Do not pair them.** Specifically:
 
-Invoke via auto-selection, `/repo-worker`, or "use the repo-worker subagent to..." in chat.
+- The Kiro CLI JSON's `prompt` field MUST be an inline string. It MUST NOT be a `file://` URI pointing at the IDE markdown body. (Kiro CLI docs accept `file://`, but doing it here creates implicit coupling with the IDE file in the same directory.)
+- The legacy `systemPromptFile` field is **not** documented in the Kiro CLI schema — do not use it.
+- The IDE MD frontmatter MUST NOT reference the JSON.
 
-### `agents/dream-worker.{json,md}`
+If you want a subagent on only one surface, ship only that file. If you want it on both, ship both — but as two independent artifacts, each fully self-contained.
 
-Memory-consolidation archetype. Tools enforced to `read`, `grep`, `glob` via JSON config — no shell, no edit, no write. Pre-loads framework + workspace + repo map + dream procedure + skills. Reviews `.ai/workspace/learnings/`, `.ai/workspace/drift-log.md`, and per-repo `AGENTS.md` files; returns a structured Dream Report. User-triggered via `/dream-worker` or "use the dream-worker subagent". Full procedure at `.ai/dream/SKILL.md`.
+### `agents/repo-worker.json` (Kiro CLI) + `agents/repo-worker.md` (Kiro IDE)
+
+Generic archetype for tasks scoped to one repo under `git-repositories/`. Pre-loads framework + workspace + repo-map + Kiro terminal rules via either `resources` (CLI) or `#[[file:...]]` (IDE), plus all workspace skills via `skill://` URIs (CLI only — IDE has no skill URI). `fs_write` is path-scoped to `git-repositories/**` and `scripts/**` on both surfaces. Reads the target repo's own `AGENTS.md` as its first action. Fresh context → zero rot.
+
+Invoke by auto-selection or by saying "use the repo-worker subagent to..." in chat (per the no-command-based-UX preference at `.ai/workspace/learnings/no-command-based-ux.md`).
+
+### `agents/dream-worker.json` (Kiro CLI) + `agents/dream-worker.md` (Kiro IDE)
+
+Memory-consolidation archetype. Tools restricted to `read`, `grep`, `glob` on both surfaces — no shell, no edit, no write. Pre-loads framework + workspace + repo map + dream procedure + skills. Reviews `.ai/workspace/learnings/`, `.ai/workspace/drift-log.md`, and per-repo `AGENTS.md` files; returns a structured Dream Report. User-triggered. Full procedure at `.ai/dream/SKILL.md`.
 
 ### Adding new agent files
 
-New subagents authored after the adapters procedure last ran will be missing from `.kiro/agents/` until the procedure is re-run. The README's "Regeneration" section names this — surface it to the user when shipping a new archetype.
+New subagents authored after the adapters procedure last ran will be missing from `.kiro/agents/` until the procedure is re-run. **Always ship both `.json` and `.md` if the agent should exist on both surfaces** — but author them independently; never make one reference the other.
 
 ## Regeneration
 
