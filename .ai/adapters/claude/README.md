@@ -6,12 +6,13 @@ Implements `.ai/enforcement.md` for [Claude Code](https://code.claude.com). Gene
 
 | Capability | Mechanism | Source file | Generated output |
 |------------|-----------|-------------|------------------|
-| **C1** Session-start broadcast | `SessionStart` hook (matcher `startup\|resume\|clear`) | `hooks/session-start.sh` | `.claude/hooks/session-start.sh` |
-| **C2** Per-turn re-injection | `UserPromptSubmit` hook | `hooks/user-prompt-submit.sh` | `.claude/hooks/user-prompt-submit.sh` |
+| **C1** Session-start broadcast | `SessionStart` hook (matcher `startup\|resume\|clear`) | `hooks/session-start.md` (bash code block extracted at install) | `.claude/hooks/session-start.sh` |
+| **C2** Per-turn re-injection | `UserPromptSubmit` hook | `hooks/user-prompt-submit.md` (bash code block extracted at install) | `.claude/hooks/user-prompt-submit.sh` |
 | **C3** Scoped rule activation | *Not implemented in the main agent.* Claude Code's only viable mechanism (a subdir `CLAUDE.md` shim) requires writing into someone else's git tree, which NOVA refuses to do. Delegated entirely to **S2** — the `repo-worker` subagent — whose system prompt makes "read the named repo's `AGENTS.md`" its first action. | — | — |
+| **C4** User-skill surfacing | Mirror inlined in the Claude session-start (and per-turn) hook bash. Source `.ai/workspace/skills/` → destination `.claude/skills/`. `rsync --delete` preferred, `cp -R` fallback. Claude's native skill loader then picks up workspace skills as if they were authored there. Hand-authored Claude-only skills must live at `~/.claude/skills/` (user-scoped) — `.claude/skills/` is exclusive to the mirror. | `hooks/session-start.md`, `hooks/user-prompt-submit.md` (sync logic inlined in each bash block) | `.claude/skills/<name>/SKILL.md` (mirrored on every session start + per-turn) |
 | **C5** PKM agent doctrine | `@`-imported always-on rules: trigger recognition for capture verbs ("capture to inbox", "log to daily", etc.), required first read of the contract on any PKM trigger, viewer-detection (`notes/.obsidian/`) for the every-note-is-a-folder-note override, path discipline, safety guards (vault is gitignored, never proactive). Always-on because triggers fire from cold sessions before any vault declaration exists. | `.ai/adapters/_shared/personal-knowledge-management.md` (shared with Kiro) | Imported by `steering/CLAUDE.md` → `.claude/CLAUDE.md` |
-| **Skills** | User skills only — Claude Code's native loader picks up `.claude/skills/<name>/SKILL.md` (project) and `~/.claude/skills/...` (user-scoped) with native trigger matching. Framework `nova-*` skills do **not** land here; they stay at `.ai/<name>/SKILL.md` and load via the AGENTS.md "Framework Skills" table reference. The adapter does not write to `.claude/skills/`. | — | User-authored under `.claude/skills/` |
-| S1 Pre-edit gate | *(not yet implemented)* | | |
+| **Skills** | See **C4** above — workspace user skills are mirrored from `.ai/workspace/skills/` into `.claude/skills/` so the native loader sees them. Framework `nova-*` skills do **not** land in `.claude/skills/`; they stay at `.ai/<name>/SKILL.md` and load via the AGENTS.md "Framework Skills" table reference. Hand-authored Claude-only skills go at `~/.claude/skills/` (user-scoped) — `.claude/skills/` is owned by the C4 mirror. | `.ai/workspace/skills/<name>/SKILL.md` (source) | `.claude/skills/<name>/SKILL.md` (mirrored) |
+| **S1** Pre-edit gate | `PreToolUse` hook matching `Edit\|Write\|MultiEdit` returns exit 2 to block writes under `git-repositories/<repo>/` until that repo's `AGENTS.md` was read this session. Companion `PostToolUse` hook on `Read` drops a session marker on AGENTS.md reads. **Default-ON** (Kiro keeps it opt-in; Claude has reliable session id and gentler escape hatches). | `hooks/pre-edit-gate.md` + `hooks/pre-edit-gate-tracker.md` | `.claude/hooks/pre-edit-gate.sh` + `.claude/hooks/pre-edit-gate-tracker.sh` |
 | **S2** Focused subagent | Native Claude Code subagent (auto-delegated or invoked explicitly) | `agents/repo-worker.md` | `.claude/agents/repo-worker.md` |
 
 ## How the pointer chain works
@@ -33,9 +34,9 @@ Step 4 (per-repo `AGENTS.md`) is **NOT** auto-loaded in the main agent. The hist
 
 ## Hooks
 
-Hook scripts are bash — macOS / Linux only. Windows users: pending.
+Hook **sources** are markdown (`hooks/<name>.md`) — each contains one fenced bash code block plus prose explaining purpose, runtime path, and mode. The adapters procedure extracts the bash block and writes the runtime `.sh` (gitignored). No `.sh` files are committed under `.ai/`. macOS / Linux only — Windows users pending.
 
-Both hooks `cat` the shared checklist (`.ai/adapters/_shared/checklist.md`). They add no Claude-specific rule text — the checklist is the single source of truth across all platforms. If future Claude-only enforcement is needed, write a new hook script under `hooks/` and register it in `settings-snippet.json`.
+Both hooks `cat` the shared checklist (`.ai/adapters/_shared/checklist.md`). They add no Claude-specific rule text — the checklist is the single source of truth across all platforms. The C4 user-skill mirror logic is inlined in the bash block of each hook (deliberate duplication, two hook files only, bounded). If future Claude-only enforcement is needed, write a new hook source under `hooks/<name>.md` and register the runtime path in `settings-snippet.json`.
 
 Exit codes:
 - `0` → stdout appended to Claude's context (success path — what we want).
@@ -47,9 +48,14 @@ Exit codes:
 `settings-snippet.json` is merged (not overwritten) into `.claude/settings.local.json` during the adapters procedure. Current contents:
 
 - `autoMemoryDirectory` — redirects auto-memory into `.claude/memory/` (per-project, not per-user). Claude Code explicitly refuses this key from shared `.claude/settings.json` to prevent a shared repo from hijacking a teammate's memory path — that's why it lives in `settings.local.json`.
-- `hooks.SessionStart` and `hooks.UserPromptSubmit` — hook registrations pointing at `$CLAUDE_PROJECT_DIR/.claude/hooks/...`.
+- `hooks.SessionStart` (matcher `startup|resume|clear`) — fires `session-start.sh` for C1 + C4.
+- `hooks.UserPromptSubmit` — fires `user-prompt-submit.sh` for C2 + C4 + task-aware pointers.
+- `hooks.PreToolUse` (matcher `Edit|Write|MultiEdit`) — fires `pre-edit-gate.sh` for S1.
+- `hooks.PostToolUse` (matcher `Read`) — fires `pre-edit-gate-tracker.sh` to clear S1 on AGENTS.md reads.
 
 **Merge rule.** Existing top-level keys (permissions, etc.) are preserved. Inside `hooks`, entries are appended to the event's array — existing user hooks are not clobbered.
+
+**Disabling S1.** If the pre-edit gate becomes friction-heavy, remove **both** the `PreToolUse` and `PostToolUse` blocks from `.claude/settings.local.json`. Removing only one half leaves the gate active without a way to clear it.
 
 ## Anti-duplication
 
@@ -79,12 +85,17 @@ Don't add `frontend-repo`, `backend-repo`, etc. speculatively — only when a co
 
 ## Skills
 
-`.claude/skills/` is **for user skills only**. The adapter does not write there.
+Three lanes, three locations:
 
-- **User skills** — author directly under `.claude/skills/<name>/SKILL.md` (project) or `~/.claude/skills/...` (user-scoped). Claude Code's native loader handles trigger matching, frontmatter, and progressive loading. Per `AGENTS.md` § "Skills", NOVA prescribes no location for user skills; this adapter uses Claude's native path.
-- **Framework skills (`nova-*`)** — stay at `.ai/<name>/SKILL.md` (committed source of truth). They load via the AGENTS.md "Framework Skills" table — the agent reads the table (auto-imported via `.claude/CLAUDE.md` at session start) and reasons against each skill's `description` to route. No copy step, no runtime duplication, no risk of clobbering user files.
+- **Workspace user skills** — authored once at `.ai/workspace/skills/<name>/SKILL.md` (committed, source of truth). Mirrored to `.claude/skills/<name>/SKILL.md` on every session start by `_shared/sync-skills.sh` (capability **C4**). Claude's native loader picks them up at trigger time as if they were authored there.
+- **Hand-authored Claude-only skills** — live at `~/.claude/skills/<name>/SKILL.md` (user-scoped). Loaded by Claude regardless of project. Use this lane for things that are specific to your Claude setup and don't belong in the shared workspace skills source.
+- **Framework skills (`nova-*`)** — stay at `.ai/<name>/SKILL.md` (committed). Load via the root `AGENTS.md` "Framework Skills" table — that table is `@`-imported into context at session start and the agent reasons against each skill's `description` to route.
 
-Why this split: NOVA-owned skills shouldn't be living next to user-owned skills in the same folder. A regenerable adapter step that writes into `.claude/skills/` is one wrong glob away from clobbering a hand-authored skill. Keeping the dirs separate keeps ownership clear.
+**Why mirror instead of authoring directly under `.claude/skills/`.** `.claude/` is gitignored / per-developer. Authoring there means workspace skills become per-machine and aren't shared across team members or across the same user's machines. Authoring at `.ai/workspace/skills/` keeps a single committed source of truth; the mirror just makes the platform's native loader see them.
+
+**Why `.claude/skills/` is exclusive to the mirror.** `rsync --delete` keeps the mirror exact — anything in `.claude/skills/` that isn't in `.ai/workspace/skills/` will be removed. Hand-authored Claude-only skills must therefore live at `~/.claude/skills/`, not at `.claude/skills/`. This is a deliberate ownership rule: keeping the dirs disjoint prevents the mirror from clobbering hand-authored work.
+
+**Mid-session edits.** The user-prompt-submit hook re-runs the mirror, so edits to `.ai/workspace/skills/` land in `.claude/skills/` on the next prompt without requiring `/clear` (Claude may still need a session reset to fully re-read updated descriptions, depending on caching).
 
 ## Commands
 
@@ -92,14 +103,23 @@ Why this split: NOVA-owned skills shouldn't be living next to user-owned skills 
 
 Shortcut that delegates to the `dream-worker` subagent. Uses `disable-model-invocation: true` — Claude will not invoke `/dream` on its own; only the user can trigger it. MVP is strictly user-triggered; scheduled/automatic dreaming is explicitly deferred per `.ai/dream/SKILL.md`.
 
+### `commands/repo.md` → `/repo`
+
+Shortcut that spawns the `repo-worker` subagent on a named repo with a task. Usage: `/repo <repo-name> <task>`. The command resolves the name against `.ai/workspace/map/repos.md` (and `repos-extended.md` if not found in the primary), then invokes the subagent with a self-contained prompt that pre-loads the repo's path and instructs "read its AGENTS.md first." Uses `disable-model-invocation: true` — user-triggered only.
+
+### `commands/drift.md` → `/drift`
+
+Shortcut that appends a one-line entry to `.ai/workspace/learnings/drift-log.md`. Usage: `/drift <freeform description of what the agent missed>`. The command reads the schema from the log file's header, parses the freeform input into the schema fields (using `unknown` where unclear), and appends in chronological order. Uses `disable-model-invocation: true` — user-triggered only. Without the log being kept, there's no measurement signal for whether the rest of the enforcement layer is actually working — `enforcement.md` § Measurement names this as the foundational feedback loop.
+
 ## Regeneration
 
 Run the adapters procedure (`.ai/adapters/SKILL.md`). It:
 
 1. Copies `steering/CLAUDE.md` → `.claude/CLAUDE.md`.
-2. Copies `hooks/*.sh` → `.claude/hooks/`, sets them executable.
+2. For each `hooks/<name>.md`, extracts its bash code block to `.claude/hooks/<name>.sh` and `chmod +x`.
 3. Copies `agents/*.md` → `.claude/agents/`.
 4. Merges `settings-snippet.json` into `.claude/settings.local.json` surgically.
-5. Reports what changed.
+5. Runs `.claude/hooks/session-start.sh` once at install time so the C4 mirror populates `.claude/skills/` immediately — the hook keeps it fresh from then on.
+6. Reports what changed.
 
 Runtime outputs (the workspace-root `.claude/` only) are gitignored. Sources under `.ai/adapters/claude/` are committed. The procedure does NOT write anywhere under `git-repositories/<repo>/` — see `.ai/adapters/SKILL.md` step 7 hard rule.

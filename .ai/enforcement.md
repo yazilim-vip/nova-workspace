@@ -43,6 +43,14 @@ When the agent operates on a file under `git-repositories/<repo>/`, that repo's 
 
 **Rationale.** Lazy discovery fails — an agent under context pressure will not reliably walk the `repos.md` → per-repo `AGENTS.md` chain when it matters. Scope-activated rules remove the agent from the loop.
 
+### C4 — User-skill surfacing
+
+Workspace user skills authored under `.ai/workspace/skills/<name>/SKILL.md` MUST be discoverable to the platform's native skill loader at trigger time, without requiring the agent to walk `.ai/workspace/skills/` itself. Each adapter picks its mechanism — direct URI reference, mirror script, or whatever the platform supports natively.
+
+**Rationale.** The Navigation Protocol's "load skills on trigger" step is probabilistic — under context pressure, the agent will not reliably reason against an `AGENTS.md` skills table to choose a skill. Native skill loaders surface skills via the host's own attention mechanism (e.g. tool registration, descriptions in the system prompt) and fire reliably. If a skill isn't in the native registry, it effectively doesn't exist at trigger time. Field-observed failure mode: users repeatedly nudging the agent ("check the X skill", "why didn't you use Y") because authored skills never reached the loader.
+
+**Implementation note.** Mirror destinations are owned by the NOVA adapter — hand-authored platform-specific skills must live in the platform's user-scoped location (e.g. `~/.claude/skills/` for Claude Code), not in the workspace-local mirror destination, to avoid clobber on regeneration. The shared mirror script lives at `.ai/adapters/_shared/sync-skills.sh` and is called from each adapter's session-start hook (and optionally per-turn hook for mid-session edit pickup).
+
 ## Capabilities — SHOULD
 
 Adapters SHOULD implement these when the platform supports them cleanly. They raise the floor but add friction; ship them opt-in if friction is measurable.
@@ -53,7 +61,11 @@ Block `Edit` / `Write` actions on files under `git-repositories/<repo>/` until t
 
 **Rationale.** Makes C3 enforceable rather than informational. Turns "should have read it" into "can't write until you've read it."
 
-**Friction warning.** False positives block valid work. Ship as opt-in (separate settings snippet) and document the escape hatch.
+**Friction warning.** False positives block valid work. Ship behavior depends on session-id reliability:
+- **Claude:** ship default-ON. `CLAUDE_SESSION_ID` is reliable, the companion `PostToolUse` tracker auto-clears on AGENTS.md reads, and disabling is one block-removal in `settings.local.json`.
+- **Kiro:** ship opt-in. `KIRO_SESSION_ID` may be missing in some flows, falling back to date-bucketed ids that misfire across day boundaries.
+
+Both implementations document escape hatches (read AGENTS.md to auto-clear, manual marker `touch`, or disable the hook). The status across adapters: **Claude — default-ON. Kiro — opt-in.**
 
 ### S2 — Focused subagent
 
@@ -79,6 +91,10 @@ Each adapter's README fills this in for its platform.
 
 - `.ai/adapters/_shared/checklist.md` — the ≤5 line re-injection content. Both platforms' per-turn hooks `cat` this file. Single source of truth.
 - `_shared/` is not a platform directory — the adapters procedure MUST skip it when enumerating platforms.
+
+## No committed shell scripts under `.ai/`
+
+Hook sources live as markdown (`<name>.md`) under `.ai/adapters/<platform>/hooks/` — each containing a single fenced ` ```bash ``` ` code block plus prose explaining purpose, runtime path, and mode. The adapters procedure extracts the bash and writes the runtime `.sh` (gitignored, machine-local). Rationale: keeps the framework documentation-shaped — every committed file is human-reviewable prose; runtime executables are generated artifacts that don't pollute review or grep with build noise. C4 sync logic is inlined per-platform into the relevant hook source rather than living as a separate shared script — duplication is bounded (one platform, two hooks) and outweighs the cost of a build-time include mechanism.
 
 ## Measurement
 

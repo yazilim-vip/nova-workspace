@@ -11,7 +11,7 @@ Framework skill — bridges NOVA's `AGENTS.md` rules to each host agent's native
 
 Each agent has its own rules/memory/steering/hook convention, and none of them read NOVA's files the same way. Adapters bridge the gap by giving each host agent a tiny pointer — in its native format — that tells it where NOVA's real instructions live, plus platform-native enforcement that converts prose suggestions into deterministic context.
 
-**The enforcement contract lives at `.ai/enforcement.md`.** Three MUST capabilities (session-start broadcast, per-turn re-injection, scoped activation) and two SHOULD capabilities (pre-edit gate, focused subagent). Every adapter's README maps the contract to its platform-native mechanism. Read the contract before editing an adapter.
+**The enforcement contract lives at `.ai/enforcement.md`.** Four MUST capabilities (session-start broadcast, per-turn re-injection, scoped activation, user-skill surfacing) and two SHOULD capabilities (pre-edit gate, focused subagent). Every adapter's README maps the contract to its platform-native mechanism. Read the contract before editing an adapter.
 
 Note: **Claude Code does not natively read `AGENTS.md`** (only `CLAUDE.md`). A committed root `CLAUDE.md` with the plain text "read AGENTS.md" is a text instruction, not enforcement. The Claude adapter strengthens this by generating a `.claude/CLAUDE.md` that uses Claude's native `@path` import syntax to load `AGENTS.md` (plus workspace `AGENTS.md` and `repos.md`) into context at session start — transitive `@` expansion, same mechanism as any `CLAUDE.md`.
 
@@ -36,7 +36,7 @@ Each platform directory has three kinds of files:
 |---------------|---------|---------------------------|
 | `.ai/adapters/<platform>/README.md` | Adapter README — capability mapping table, platform specifics. | No — framework-committed docs. |
 | `.ai/adapters/<platform>/steering/` | Templates for the platform's rules engine. Pure pointers. | Yes — copied to platform's output dir. |
-| `.ai/adapters/<platform>/hooks/` | Hook scripts + platform hook config (e.g. `.kiro.hook`). Reference `_shared/` content. | Yes — copied + chmod +x. |
+| `.ai/adapters/<platform>/hooks/` | Hook **sources as markdown** (`<name>.md`) — each contains a single fenced ` ```bash ``` ` code block plus prose explaining purpose, runtime path, and mode (default vs opt-in). Optional platform hook config files (`<name>.kiro.hook`) live alongside. **No `.sh` files are committed under `.ai/`** — the runtime `.sh` is generated from the markdown source by the adapters procedure. | Bash block extracted → runtime `.sh`, `chmod +x`. |
 | `.ai/adapters/<platform>/agents/` | Subagent templates (markdown with YAML frontmatter). Pre-load scoped context into a fresh window. | Yes — copied to platform's agents output dir. |
 | `.ai/adapters/<platform>/commands/` | Slash-command / skill shortcuts that wrap subagents or procedures. Platform-native format. | Yes — copied to platform's commands output dir when the platform supports it. |
 | `.ai/adapters/<platform>/*.md` (top-level) | Platform-specific rule sources of truth, referenced from steering/hooks. | No — stay in framework, referenced by path. |
@@ -82,12 +82,19 @@ More platforms get added as they're supported.
    - Copy to the platform's matching runtime directory (`.claude/agents/`, `.claude/commands/`, `.kiro/agents/`; Kiro invokes subagents by name, so no separate commands dir).
    - Preserve existing user-authored files — ask before overwriting if the target exists and differs from the template.
    - Claude Code loads both at session start. User must restart Claude Code or use `/agents` to reload after changes.
-5. **Install hooks.** For each file in `.ai/adapters/<platform>/hooks/`:
-   - Copy `*.sh` scripts into the platform's runtime hook directory (`.claude/hooks/`, `.kiro/hooks/`).
-   - `chmod +x` each copied script.
-   - Copy platform hook config files (`*.kiro.hook` for Kiro) into the same runtime hook directory.
-   - Verify each script is readable and executable; do a dry-run `bash -n` syntax check before considering the step done.
-   - **Never rewrite a user's existing hook script without asking** — if the target path exists and differs, surface the diff first.
+5. **Install hooks.** Hook sources under `.ai/adapters/<platform>/hooks/` are **markdown files** (`<name>.md`) — each contains a single fenced ` ```bash ``` ` code block. **No `.sh` files exist in source.** For each `<name>.md`:
+   - Skip files marked **Mode: Opt-in** in their frontmatter prose unless the user requested them.
+   - Extract the bash block to the platform's runtime hook directory:
+     ```bash
+     awk '/^```bash$/{f=1; next} /^```$/{f=0} f' \
+         "<src>/<name>.md" > "<dst>/<name>.sh"
+     chmod +x "<dst>/<name>.sh"
+     ```
+     where `<dst>` is `.claude/hooks/` or `.kiro/hooks/`.
+   - Copy any sibling platform config files (`<name>.kiro.hook`) into the same runtime directory unchanged.
+   - Verify each generated script with `bash -n` before considering the step done.
+   - **Never overwrite a user's existing hook script without asking** — if the target path exists and differs, surface the diff first.
+   - **First-run population for path-scoped skill mirrors.** If a hook's bash mirrors `.ai/workspace/skills/` to a platform skill directory (Claude's session-start does — see C4), invoke the generated runtime hook once after install so the destination is populated immediately rather than on next session-start.
 6. **Merge settings snippets, if any.** If the platform ships a `*-snippet.json` under `.ai/adapters/<platform>/`, merge it into the platform's local settings file — **merge, don't overwrite**. Rules:
    - Preserve every existing top-level key (permissions, env, etc.).
    - For nested arrays (e.g. `hooks.SessionStart`), append entries — do not replace the array. User-authored hooks must survive the merge.
