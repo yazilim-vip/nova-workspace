@@ -41,7 +41,7 @@ Workspace user skills authored under `.ai/workspace/skills/<name>/SKILL.md` MUST
 
 **Rationale.** The Navigation Protocol's "load skills on trigger" step is probabilistic — under context pressure, the agent will not reliably reason against an `AGENTS.md` skills table to choose a skill. Native skill loaders surface skills via the host's own attention mechanism (e.g. tool registration, descriptions in the system prompt) and fire reliably. If a skill isn't in the native registry, it effectively doesn't exist at trigger time. Field-observed failure mode: users repeatedly nudging the agent ("check the X skill", "why didn't you use Y") because authored skills never reached the loader.
 
-**Implementation note.** Mirror destinations are owned by the NOVA adapter — hand-authored platform-specific skills must live in the platform's user-scoped location (e.g. `~/.claude/skills/` for Claude Code), not in the workspace-local mirror destination, to avoid clobber on regeneration. The shared mirror script lives at `.ai/adapters/_shared/sync-skills.sh` and is called from each adapter's session-start hook (and optionally per-turn hook for mid-session edit pickup).
+**Implementation note.** Mirror destinations are owned by the NOVA adapter — hand-authored platform-specific skills must live in the platform's user-scoped location (e.g. `~/.claude/skills/` for Claude Code), not in the workspace-local mirror destination, to avoid clobber on regeneration. The shared mirror script lives at `.ai/nova-skills/adapters/_shared/sync-skills.sh` and is called from each adapter's session-start hook (and optionally per-turn hook for mid-session edit pickup).
 
 ## Capabilities — SHOULD
 
@@ -65,7 +65,7 @@ Provide a subagent template that pre-loads scoped rules (workspace identity + na
 
 **Rationale.** Rot is a function of context length. A fresh context for a focused task sidesteps the problem entirely — the chain is pre-walked at subagent-definition time, not at agent runtime.
 
-**Status.** Shipped as a single generic `repo-worker` archetype on both platforms. Sources: `.ai/adapters/claude/agents/repo-worker.md`, `.ai/adapters/kiro/agents/repo-worker.md`. Add more archetypes (frontend-repo, backend-repo) only when a concrete pattern repeats enough to justify maintenance.
+**Status.** Shipped as a single generic `repo-worker` archetype on both platforms. Sources: `.ai/nova-skills/adapters/claude/agents/repo-worker.md`, `.ai/nova-skills/adapters/kiro/agents/repo-worker.md`. Add more archetypes (frontend-repo, backend-repo) only when a concrete pattern repeats enough to justify maintenance.
 
 ## Adapter mapping table — template
 
@@ -73,7 +73,7 @@ Each adapter's README fills this in for its platform.
 
 | Capability | Mechanism | Source file | Generated output |
 |------------|-----------|-------------|------------------|
-| C1. Session-start broadcast | *(platform-native always-on / session-start mechanism)* | `.ai/adapters/<platform>/...` | *(runtime path)* |
+| C1. Session-start broadcast | *(platform-native always-on / session-start mechanism)* | `.ai/nova-skills/adapters/<platform>/...` | *(runtime path)* |
 | C3. Scoped rule activation | *(platform-native scope mechanism)* | *(generator or template)* | *(runtime path)* |
 | C4. User-skill surfacing | *(platform-native skill loader bridge)* | *(hook or URI reference)* | *(runtime path)* |
 | S1. Pre-edit gate | *(optional)* | | |
@@ -83,11 +83,11 @@ Each adapter's README fills this in for its platform.
 
 ### C2 — Per-turn re-injection (removed 2026-04-30)
 
-Was: "On every user prompt, a short checklist MUST be injected into context." Implemented via per-turn hooks that `cat` a shared `.ai/adapters/_shared/checklist.md` and emit task-pointer matches.
+Was: "On every user prompt, a short checklist MUST be injected into context." Implemented via per-turn hooks that `cat` a shared `.ai/nova-skills/adapters/_shared/checklist.md` and emit task-pointer matches.
 
 Removed because empirical use showed the per-turn injection added cognitive load and felt like nagging without measurably reducing drift. The rules loaded by C1 at session start were sufficient. Both the checklist and task-pointer source files were deleted; per-turn hooks were either removed (Kiro) or stripped to C4-only mid-session refresh (Claude).
 
-If you want this back: restore `.ai/adapters/_shared/checklist.md` with terse content, restore the hook-level `cat` of that file in each adapter's per-turn hook, and re-add the C2 capability to this contract.
+If you want this back: restore `.ai/nova-skills/adapters/_shared/checklist.md` with terse content, restore the hook-level `cat` of that file in each adapter's per-turn hook, and re-add the C2 capability to this contract.
 
 ## Shared assets
 
@@ -95,11 +95,11 @@ If you want this back: restore `.ai/adapters/_shared/checklist.md` with terse co
 
 ## No committed shell scripts under `.ai/`
 
-Hook sources live as markdown (`<name>.md`) under `.ai/adapters/<platform>/hooks/` — each containing a single fenced ` ```bash ``` ` code block plus prose explaining purpose, runtime path, and mode. The adapters procedure extracts the bash and writes the runtime `.sh` (gitignored, machine-local). Rationale: keeps the framework documentation-shaped — every committed file is human-reviewable prose; runtime executables are generated artifacts that don't pollute review or grep with build noise. C4 sync logic is inlined per-platform into the relevant hook source rather than living as a separate shared script — duplication is bounded (one platform, two hooks) and outweighs the cost of a build-time include mechanism.
+Hook sources live as markdown (`<name>.md`) under `.ai/nova-skills/adapters/<platform>/hooks/` — each containing a single fenced ` ```bash ``` ` code block plus prose explaining purpose, runtime path, and mode. The adapters procedure extracts the bash and writes the runtime `.sh` (gitignored, machine-local). Rationale: keeps the framework documentation-shaped — every committed file is human-reviewable prose; runtime executables are generated artifacts that don't pollute review or grep with build noise. C4 sync logic is inlined per-platform into the relevant hook source rather than living as a separate shared script — duplication is bounded (one platform, two hooks) and outweighs the cost of a build-time include mechanism.
 
 ## Measurement
 
-Enforcement without measurement is faith, not engineering. NOVA measures via `.ai/workspace/learnings/drift-log.md` — a per-incident log. Whenever the agent drifts (misses a rule, skips a nav step, requires "check your instructions"), append one line. Seed template: `.ai/onboarding/assets/learnings/drift-log.md`.
+Enforcement without measurement is faith, not engineering. NOVA measures via `.ai/workspace/learnings/drift-log.md` — a per-incident log. Whenever the agent drifts (misses a rule, skips a nav step, requires "check your instructions"), append one line. Seed template: `.ai/nova-skills/onboarding/assets/learnings/drift-log.md`.
 
 Use the log to:
 - Spot same-rule-missed-3+-times patterns → strengthen the checklist or tighten a hook.
@@ -114,4 +114,4 @@ Adding a capability: update this file, then each adapter's README and implementa
 
 Removing a capability: rare; requires equivalent replacement. Do not silently drop.
 
-Reference: this file is pointed at from `.ai/adapters/SKILL.md`.
+Reference: this file is pointed at from `.ai/nova-skills/adapters/SKILL.md`.

@@ -8,7 +8,7 @@ This is a framework convention, not a skill — the agent reads it when creating
 
 A **project** is one repo, one logical code unit. It has its own `AGENTS.md`, optionally an `.ai/` directory, and optionally subfolder `AGENTS.md` files for submodules with distinct rules.
 
-Cross-project concerns — safety rules, repo maps, infra conventions, and skills that apply to *every* repo — belong to the **workspace**, not the project. If you need to coordinate across multiple repos, that's a workspace (see `.ai/onboarding/`), not a "multi-repo project." No nested workspaces.
+Cross-project concerns — safety rules, repo maps, infra conventions, and skills that apply to *every* repo — belong to the **workspace**, not the project. If you need to coordinate across multiple repos, that's a workspace (see `.ai/nova-skills/onboarding/`), not a "multi-repo project." No nested workspaces.
 
 Project-specific skills are different — they belong inside the project. Same skill name (`deploy`, `test`, `migrate`) can mean different things across repos because scope is location-disambiguated. See § "Project Skills" below.
 

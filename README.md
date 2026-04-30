@@ -11,8 +11,8 @@ NOVA is a markdown-based framework built on the [AGENTS.md](https://agents.md) c
 - **`AGENTS.md`** — the agent's identity, safety rules, and navigation protocol.
 - **`SOUL.md`** — voice and depth, loaded only when the task demands it.
 - **`.ai/enforcement.md`** — platform-agnostic contract that turns prose rules into deterministic agent behavior (session-start broadcast, per-turn re-injection, scoped activation, optional pre-edit gate, focused subagent).
-- **`.ai/adapters/`** — per-platform implementations of the enforcement contract. Ships [Claude Code](.ai/adapters/claude/README.md) and [Kiro](.ai/adapters/kiro/README.md) today; pluggable for more.
-- **Framework skills under `.ai/<name>/SKILL.md`** — agentskills.io-format, `nova-`-prefixed. Listed in `AGENTS.md` § "Framework Skills"; loaded on trigger:
+- **`.ai/nova-skills/adapters/`** — per-platform implementations of the enforcement contract. Ships [Claude Code](.ai/nova-skills/adapters/claude/README.md) and [Kiro](.ai/nova-skills/adapters/kiro/README.md) today; pluggable for more.
+- **Framework skills under `.ai/nova-skills/<name>/SKILL.md`** — agentskills.io-format, `nova-`-prefixed. Listed in `AGENTS.md` § "Framework Skills"; loaded on trigger:
   - `nova-onboarding` — guided workspace setup.
   - `nova-self-update` — deliberate upstream sync.
   - `nova-adapters` — generate per-platform steering, hooks, subagents.
@@ -25,9 +25,9 @@ NOVA is a markdown-based framework built on the [AGENTS.md](https://agents.md) c
 - **`git-repositories/`** — the clone convention (`<platform>/<group>/<repo>`; gitignored).
 
 **Mental model:**
-- `.ai/<name>/SKILL.md` = NOVA's own framework skills (agentskills.io format, `nova-`-prefixed, listed in AGENTS.md table).
+- `.ai/nova-skills/<name>/SKILL.md` = NOVA's own framework skills (agentskills.io format, `nova-`-prefixed, listed in AGENTS.md table).
 - `.ai/*.md` = NOVA's conventions (read when context demands).
-- `.ai/adapters/` = per-platform pointers + hooks + subagents (committed; runtime outputs like `.claude/`, `.kiro/` are gitignored, regenerable).
+- `.ai/nova-skills/adapters/` = per-platform pointers + hooks + subagents (committed; runtime outputs like `.claude/`, `.kiro/` are gitignored, regenerable).
 - `.ai/workspace/` = your local workspace state (gitignored). Identity overrides, repo map, infra config, learnings.
 
 NOVA never writes into `.ai/workspace/` upstream — your local state stays yours.
@@ -38,7 +38,7 @@ Most agent tooling operates inside a single repo. Real engineering work spans ma
 
 ## Why prose plus enforcement?
 
-LLM compliance with prose rules is probabilistic, and attention to mid-context instructions decays as the conversation grows. NOVA's `AGENTS.md` is the prose; `.ai/adapters/` is what makes it stick:
+LLM compliance with prose rules is probabilistic, and attention to mid-context instructions decays as the conversation grows. NOVA's `AGENTS.md` is the prose; `.ai/nova-skills/adapters/` is what makes it stick:
 
 - **Session-start broadcast** — workspace identity + nav protocol injected at position 0 (Claude `@`-imports, Kiro `inclusion: always` steering).
 - **Per-turn re-injection** — a 5-line checklist re-injected on every user prompt via platform hooks, refreshing attention at the end of context where it's strongest.
@@ -56,19 +56,19 @@ The full contract lives at [.ai/enforcement.md](.ai/enforcement.md). Adapters ar
 4. Say **"set up the \<platform> adapter"** to generate platform-native steering, hooks, and subagents (`.claude/`, `.kiro/`).
 5. (Optional) Clone your project repos into `git-repositories/` following the `<platform>/<group>/<repo>` convention.
 
-Manual alternative: copy `.ai/onboarding/assets/map/repos.md` → `.ai/workspace/map/repos.md` and `.ai/onboarding/assets/infra.md` → `.ai/workspace/infra.md`, then fill them in yourself.
+Manual alternative: copy `.ai/nova-skills/onboarding/assets/map/repos.md` → `.ai/workspace/map/repos.md` and `.ai/nova-skills/onboarding/assets/infra.md` → `.ai/workspace/infra.md`, then fill them in yourself.
 
 ## What onboarding looks like
 
 NOVA uses a guided conversation — it asks 2-3 questions at a time, adapts to your answers, and generates the workspace instance files at the end.
 
-See a full example conversation in [.ai/onboarding/assets/example-dialogue.md](.ai/onboarding/assets/example-dialogue.md) — identity → repos → infra → rules → AI tool → generated-files preview, plus short variants for skipping a topic, adding a repo later, and the first post-onboarding task.
+See a full example conversation in [.ai/nova-skills/onboarding/assets/example-dialogue.md](.ai/nova-skills/onboarding/assets/example-dialogue.md) — identity → repos → infra → rules → AI tool → generated-files preview, plus short variants for skipping a topic, adding a repo later, and the first post-onboarding task.
 
 ## Bringing your own skills
 
 Skills can live at any tier of the workspace hierarchy. NOVA prescribes paths only for framework-shipped skills; everything else is your call.
 
-- **Workspace user skills** — generic, cross-repo skills you write yourself. NOVA prescribes no location. Common spots: host-native location (e.g. `.claude/skills/` for Claude Code, picked up by the native loader), `.ai/workspace/skills/`, or wherever else suits you. Each platform's adapter at `.ai/adapters/<platform>/README.md` § "Skills" describes the native path.
+- **Workspace user skills** — generic, cross-repo skills you write yourself. NOVA prescribes no location. Common spots: host-native location (e.g. `.claude/skills/` for Claude Code, picked up by the native loader), `.ai/workspace/skills/`, or wherever else suits you. Each platform's adapter at `.ai/nova-skills/adapters/<platform>/README.md` § "Skills" describes the native path.
 - **Project skills** — domain-specific skills owned by one repo. Declared in the repo's own `AGENTS.md` and stored at the repo's choice (`<repo>/.ai/skills/<name>/SKILL.md` is one common convention, not required). Auto-loaded when the agent enters the repo. Same skill name (`deploy`, `test`, `migrate`) can mean different things across repos because scope is location-disambiguated.
 
 Pick whichever tier(s) fit your workflow. Mix freely. See `AGENTS.md` § "Skills" and `.ai/project-structure.md` § "Project Skills" for details.
@@ -95,7 +95,7 @@ If you've forked NOVA, sync deliberately — don't blind-merge:
 git remote add upstream https://github.com/yazilim-vip/nova-workspace.git
 ```
 
-Then ask your agent to "sync with upstream". It'll follow the flow in [.ai/self-update/SKILL.md](.ai/self-update/SKILL.md): fetch, classify each change, surface conflicts, apply or skip with reasons recorded.
+Then ask your agent to "sync with upstream". It'll follow the flow in [.ai/nova-skills/self-update/SKILL.md](.ai/nova-skills/self-update/SKILL.md): fetch, classify each change, surface conflicts, apply or skip with reasons recorded.
 
 ## Contributing upstream
 
