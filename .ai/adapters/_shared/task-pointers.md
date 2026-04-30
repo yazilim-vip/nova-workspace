@@ -17,21 +17,5 @@ The pattern is matched case-insensitively against the user's prompt (raw stdin e
 ## Patterns
 
 <!-- begin-pointers -->
-(commit|branch|merge|pull request|merge request|rebase|squash|cherry-pick) => `.ai/workspace/skills/git-workflow/SKILL.md` (git-workflow skill)
-(terraform|terragrunt) => `.ai/workspace/skills/terraform/SKILL.md` (terraform skill)
-(kubectl|kubernetes|helm chart|kustomize|fluxcd|flux cd) => `.ai/workspace/skills/kubernetes/SKILL.md` (kubernetes skill)
-(pipeline|gitlab.?ci|github action|workflow\.ya?ml|image tag) => `.ai/workspace/skills/ci-cd/SKILL.md` (ci-cd skill)
-(openclaw) => `.ai/workspace/skills/openclaw/SKILL.md` (openclaw skill)
-(refactor|debugging|code quality|code review) => `.ai/workspace/skills/code-quality/SKILL.md` (code-quality skill)
-(gym-tracker) => `git-repositories/gitlab/yazilim.vip/community/projects/gym-tracker/gym-tracker/AGENTS.md` (gym-tracker repo)
-(chart-ai) => `git-repositories/gitlab/yazilim.vip/private/chart-ai/chart-ai/` (chart-ai monorepo — read its AGENTS.md)
-(payment-vip) => `git-repositories/gitlab/yazilim.vip/community/projects/payment-vip/` (payment-vip group)
-(yaver) => `git-repositories/gitlab/yazilim.vip/private/yaver/` (yaver group — inactive)
-(bookmarks-mcp) => `git-repositories/github/yazilim-vip/bookmarks-mcp/AGENTS.md` (bookmarks MCP server)
-(yvip-fluxcd|fluxcd) => `git-repositories/gitlab/yazilim.vip/yvip-fluxcd/` (fluxcd GitOps)
-(yvip-terragrunt) => `git-repositories/gitlab/yazilim.vip/terraform/yvip-terragrunt/` (terragrunt orchestrator)
-(bifrost|llm gateway) => `.ai/workspace/infra.md` (Bifrost LLM gateway — internal apps SHOULD route through it)
-(keycloak|sso|oidc) => `.ai/workspace/infra.md` (Keycloak SSO — internal apps SHOULD authenticate via it)
-(dream pass|dream worker|consolidate.+memory) => `.ai/dream/SKILL.md` (dream pass procedure)
-(onboard|set up.+workspace|fresh.+workspace) => `.ai/onboarding/SKILL.md` (onboarding flow)
+<!-- Patterns intentionally empty. The "Consider:" lines emitted by per-turn pointer matching were felt as nagging ("read this skill, why didn't you use that skill") and added per-turn token noise. Skills with strong descriptions auto-route in Claude Code without needing pointer hints; if the skill description is the bug, fix it once at the source. Cut on 2026-04-30 alongside the checklist silence. To re-enable just-in-time hints, add lines back here using the schema in the file header. -->
 <!-- end-pointers -->

@@ -1,5 +1,1 @@
-NOVA workspace reminder (re-injected per user turn):
-- Nav: AGENTS.md → .ai/workspace/AGENTS.md → .ai/workspace/map/repos.md → per-repo AGENTS.md.
-- Editing under git-repositories/<repo>/ → read that repo's AGENTS.md first.
-- Platform rules under .ai/adapters/<platform>/ (strict — e.g. Kiro terminal.md).
-- Reference files by path; do not paraphrase NOVA rules.
+<!-- Intentionally empty. Prior content (per-turn nav reminder + path enumeration) was found to be high-noise and low-impact: the rules are loaded at session start via the @ import chain; the per-turn re-injection added cognitive load without measurably reducing drift. Cut on 2026-04-30 — see .ai/workspace/learnings/no-command-based-ux.md and the friction-reduction commit. If you want to put a one-line nudge back, keep it short and put it here; the C1 + C2 hooks will pick it up automatically. -->

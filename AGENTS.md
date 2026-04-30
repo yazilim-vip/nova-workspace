@@ -19,21 +19,11 @@ This file is the framework default. Workspace-specific identity and overrides li
 
 > Workspace-specific safety rules (infra tooling, repo management constraints) live in `.ai/workspace/infra.md`.
 
-## Navigation Protocol
+## Navigation
 
-Work like a strategy game — start with fog of war, reveal context as you go.
+You're reading the entry point. Workspace identity and overrides live at `.ai/workspace/AGENTS.md`; the repo map at `.ai/workspace/map/repos.md`; per-repo conventions at each `git-repositories/<repo>/AGENTS.md`; skills/learnings/procedures elsewhere under `.ai/`. Read what the task demands, when it demands it — do not preload everything.
 
-> **Onboarding gate:** If `.ai/workspace/.initialized` does not exist — or the user says "set up this workspace", "onboard me", or similar — load `.ai/onboarding/SKILL.md` and run the onboarding flow before anything else.
-
-1. **You are here** — this file. Framework defaults: identity, safety, navigation.
-2. **Layer workspace overrides** — if `.ai/workspace/AGENTS.md` exists, read it now. It carries workspace identity and overrides to this file.
-3. **Find the target** — read `.ai/workspace/map/repos.md` to locate the repo.
-4. **Enter the project** — navigate to the repo, read its `AGENTS.md`.
-5. **Go deeper** — if working in a subfolder, check for a subfolder `AGENTS.md` and `.ai/` directory.
-6. **Load skills** — framework skills (`nova-*`) are in the "Framework Skills" table below; load on trigger. User skills load via your platform's native skills mechanism — each adapter at `.ai/adapters/<platform>/README.md` § "Skills" names its location. For workspace-specific infra rules, read `.ai/workspace/infra.md`.
-7. **Check learnings** — scan `.ai/workspace/learnings/` for relevant accumulated knowledge.
-
-Never load everything upfront. Discover context as the task demands it.
+If `.ai/workspace/.initialized` is missing, or the user says "set up this workspace" / "onboard me" / similar, run `.ai/onboarding/SKILL.md` first.
 
 ## Scratch Space
 

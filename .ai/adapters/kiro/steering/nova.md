@@ -6,13 +6,9 @@ inclusion: always
 
 You are in a NOVA workspace. All rules live in `AGENTS.md` and `.ai/` — this file is a pointer. Read referenced files from disk; do not paraphrase, do not guess.
 
-## Navigation (read in order, as needed)
+## Navigation
 
-1. `AGENTS.md` — framework defaults.
-2. `.ai/workspace/AGENTS.md` — workspace identity and overrides. If missing, run `.ai/onboarding/SKILL.md`.
-3. `.ai/workspace/map/repos.md` — repository map. Never guess repo paths.
-4. Per-repo `AGENTS.md` — when entering `git-repositories/<repo>/`.
-5. Skills, learnings, procedures — on demand.
+`AGENTS.md` is the entry point. Workspace overrides at `.ai/workspace/AGENTS.md` (if missing → run `.ai/onboarding/SKILL.md`). Repo map at `.ai/workspace/map/repos.md` — never guess paths; read it when the task names a repo. Per-repo conventions at each `git-repositories/<repo>/AGENTS.md`. Skills, learnings, procedures elsewhere under `.ai/`. Read what the task demands; don't preload.
 
 ## Strict platform rules (read before shell use)
 
