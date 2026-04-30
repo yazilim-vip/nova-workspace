@@ -49,19 +49,22 @@ keyboard_shortcut: cmd+shift+g      # optional — Kiro-only; Claude ignores
 mcp_servers:                        # optional — MCP server allowlist
   - github
   - bookmarks
-overrides:                          # optional — per-platform escape hatches
+overrides:                          # optional — per-surface escape hatches
   claude:
     <claude-only fields>
-  kiro:
-    <kiro-only fields>
+  kiro_cli:
+    <kiro-cli-only JSON fields>
+  kiro_ide:
+    <kiro-ide-only frontmatter fields>
 ---
 ```
 
 ## Body
 
-The agent's system prompt. Markdown. Becomes:
-- `systemPromptFile` reference in Kiro agent JSON
-- Body of `.claude/agents/<name>.md` after the frontmatter
+The agent's system prompt. Markdown. Each surface inlines or embeds it natively:
+- Claude: body of `.claude/agents/<name>.md` after the frontmatter.
+- Kiro CLI: inlined as the `prompt` field (string) in the JSON. (Kiro CLI's `prompt` field also accepts `file://` URIs, but NOVA generators inline the string for self-containment — see Anti-patterns.)
+- Kiro IDE: body of `.kiro/agents/<name>.md` after the frontmatter.
 
 Write the prompt platform-neutrally. Reference NOVA conventions by path (`AGENTS.md`, `.ai/<...>`); never inline.
 
@@ -79,33 +82,61 @@ Example:
 description: Manages git workflow — branching, conventional commits, MRs/PRs, multi-repo ops, semantic versioning. Use when the user mentions branches, commits, PRs, or releases. NOT for general code review (use code-quality) or CI debugging (use ci-cd).
 ```
 
+## Surfaces
+
+Three host surfaces, each with its own native format. **Clean separation — each output file is self-contained; no cross-references between surfaces.**
+
+Verified against [Kiro CLI agent configuration reference](https://kiro.dev/docs/cli/custom-agents/configuration-reference/) and [Kiro IDE subagents docs](https://kiro.dev/docs/chat/subagents/) (both retrieved 2026-04-30).
+
+| Surface | Native format | Workspace path | Global path | Notes |
+|---------|--------------|----------------|-------------|-------|
+| Claude Code | Markdown (YAML frontmatter + body) | `.claude/agents/<n>.md` | `~/.claude/agents/<n>.md` | Claude's native subagent loader. |
+| Kiro CLI | JSON (single self-contained file) | `.kiro/agents/<n>.json` | `~/.kiro/agents/<n>.json` | Kiro CLI reads JSON. Prompt goes into the `prompt` field as an inlined string. |
+| Kiro IDE | Markdown (YAML frontmatter + body) | `.kiro/agents/<n>.md` | `~/.kiro/agents/<n>.md` | Kiro IDE reads markdown. Frontmatter carries config, body carries the prompt. |
+
+**The two Kiro surfaces share the same directory `.kiro/agents/`**; they're disambiguated by file extension (`.json` for CLI, `.md` for IDE). Both surfaces co-exist in that one directory by design — that's how Kiro's loaders find them. NOVA does not split them into subfolders.
+
+**One canonical AGENT.md fans out to one file per surface.** A spec relevant to both Kiro CLI and Kiro IDE generates two distinct files (`<n>.json` and `<n>.md`) in the same `.kiro/agents/` directory. The two files are independent artifacts of the same source; **neither references the other**.
+
+If the user runs only Claude Code, only `.claude/agents/<n>.md` is generated; the Kiro generators are no-ops. Same for the inverse.
+
 ## Platform translation (generator's job)
 
-Each adapter's generator translates this neutral spec into native files:
+Each adapter's generator translates this neutral spec into the native format for its surface. Per-surface translation tables live in each generator's procedure file:
 
-| Spec field | Claude `.claude/agents/<n>.md` | Kiro `.kiro/agents/<n>.{json,md}` |
-|------------|-------------------------------|-----------------------------------|
-| name | filename `<n>.md` | filename + JSON `name` |
-| description | frontmatter `description:` | JSON `description` |
-| tools | frontmatter `tools:` (capitalized: `Read, Edit, Bash`) | JSON `tools` (`read, edit, execute_terminal_command`) + `toolsSettings` |
-| resources `file://` | frontmatter `resources:` (file paths) | JSON `resources: ["file://path"]` |
-| resources `skill://` | Claude has no native skill URI — load via Read in body | JSON `resources: ["skill://path"]` |
-| model | frontmatter `model:` (`sonnet`/`opus`/`haiku`) | JSON `model:` (Kiro tier names) |
-| write_scope | not enforced; body should respect | JSON `toolsSettings.fs_write.allowedPaths` |
-| welcome | not present (Claude has no welcome surface) | JSON `welcomeMessage` |
-| keyboard_shortcut | ignored | JSON `keyboardShortcut` |
-| mcp_servers | settings.json `enabledMcpjsonServers` | JSON `mcpServers` |
-| body | markdown body after frontmatter | `.md` referenced by JSON `systemPromptFile` |
-| `overrides.claude` | merged into Claude frontmatter | ignored |
-| `overrides.kiro` | ignored | merged into Kiro JSON |
+- Claude → `.ai/adapters/claude/agent-gen.md`
+- Kiro CLI → `.ai/adapters/kiro/cli-agent-gen.md` (when built)
+- Kiro IDE → `.ai/adapters/kiro/ide-agent-gen.md` (when built)
+
+The neutral spec fields and their canonical meaning + per-surface mapping:
+
+| Spec field | Meaning | Claude (MD frontmatter) | Kiro CLI (JSON field) | Kiro IDE (MD frontmatter) |
+|------------|---------|-------------------------|-----------------------|---------------------------|
+| `name` | Stable identifier. | filename + frontmatter `name` | filename (without `.json`) becomes the name; optional `name` field overrides | filename (without `.md`) is default; required frontmatter `name` |
+| `description` | Auto-route key. | `description` | `description` | `description` |
+| `tools` (neutral) | Tool allowlist. | `tools: Read, Edit, Bash, ...` (capitalized, comma-separated) | `tools: ["read", "write", "shell", ...]` (lowercase, array) | `tools: ["read", "write", "shell", ...]` (lowercase, array) |
+| `resources` `file://` | Pre-loaded files. | `@`-imports inserted into the body (Claude has no `resources` array) | `resources: ["file://..."]` | not natively supported in IDE frontmatter — skip or surface in body |
+| `resources` `skill://` | Pre-loaded skill files. | Read in body at runtime | `resources: ["skill://..."]` | not natively supported — skip |
+| `model` | Model tier. | `model: sonnet/opus/haiku/inherit` | `model: "claude-sonnet-4"` (or platform-specific id) | `model: claude-sonnet-4` |
+| `write_scope` | `fs_write` path restriction. | not enforced; body should respect | `toolsSettings.write.allowedPaths: [...]` | not natively supported |
+| `welcome` | First-message hint. | not present in Claude | `welcomeMessage: "..."` | not in IDE frontmatter docs (TBD) |
+| `keyboard_shortcut` | Keybinding. | ignored | `keyboardShortcut: "ctrl+shift+r"` | not in IDE frontmatter docs (TBD) |
+| `mcp_servers` (allowlist) | MCP server activation. | settings.json `enabledMcpjsonServers` | `mcpServers: { ... }` (full inline config) or `includeMcpJson: true` | `includeMcpJson: true` / `includePowers: true` |
+| `body` | System prompt. | markdown body after frontmatter | `prompt: "<inlined string>"` (NOT `file://` — keep self-contained) | markdown body after frontmatter |
+| `overrides.claude` | Surface-specific escape. | merged into Claude frontmatter | ignored | ignored |
+| `overrides.kiro_cli` | Surface-specific escape. | ignored | merged into Kiro CLI JSON | ignored |
+| `overrides.kiro_ide` | Surface-specific escape. | ignored | ignored | merged into Kiro IDE frontmatter |
+
+Each generator's procedure file holds the canonical table for its surface; keep this overview in sync.
 
 ## Anti-patterns
 
-- **No platform-specific behavior in the body.** If Kiro and Claude truly need different prompts, split into two agents or use `overrides.<platform>.system_prompt_append`.
+- **No platform-specific behavior in the body.** If two surfaces truly need different prompts, split into two agents or use `overrides.<surface>.system_prompt_append`.
 - **No invented tool names.** Use the neutral set above. New neutral names require a spec update.
 - **No empty `description`.** Without it the agent never auto-routes — it's invisible.
 - **No paraphrasing of NOVA rules** in the body. Reference by path.
 - **No mirrors.** Generators write directly to native locations from the canonical AGENT.md. Mirroring of any tier (skills, prompts, configs) is forbidden by C4.
+- **No cross-surface file references.** Kiro CLI JSON's `prompt` field accepts inline strings OR `file://` URIs ([CLI configuration reference](https://kiro.dev/docs/cli/custom-agents/configuration-reference/)), but NOVA generators always inline the prompt as a string. Pointing the CLI's `prompt` at a `.md` file would create implicit coupling with the Kiro IDE file in the same `.kiro/agents/` directory. Each surface's output stands alone. The legacy paired `repo-worker.{json,md}` shape (where the JSON used `systemPromptFile` to reference the MD) is being phased out — note that `systemPromptFile` is not a documented CLI field; it is a convention from earlier internal use.
 
 ## Generator contract
 
