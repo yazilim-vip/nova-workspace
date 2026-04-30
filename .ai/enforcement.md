@@ -18,24 +18,16 @@ Adapters are pointers — not copies. Hooks and auto-injected steering MUST refe
 
 ## Capabilities — MUST
 
-Every adapter MUST implement these three.
+Every adapter MUST implement these.
 
 ### C1 — Session-start broadcast
 
 On session start (or its platform equivalent), the agent's context MUST include:
 - The workspace identity line ("You are operating in the NOVA workspace").
-- The Navigation Protocol checklist from `AGENTS.md`.
+- The framework rulebook (`AGENTS.md` and `.ai/workspace/AGENTS.md` content).
 - A pointer to any platform-specific strict rules (e.g. Kiro's `terminal.md`).
 
-**Rationale.** Counters cold-start blind spots and ensures the rulebook is at position 0 of context while attention is strongest.
-
-### C2 — Per-turn re-injection
-
-On every user prompt, a short (≤5 line) checklist MUST be injected into context.
-
-**Rationale.** Counters context rot. A one-shot injection at session start decays as the conversation grows — the middle of long contexts gets the weakest attention, so the mid-session user prompts run on a cold rulebook. Per-turn re-injection keeps the rulebook warm at the end of context where attention is strong again.
-
-**Implementation note.** Keep the checklist short. Long re-injection consumes attention budget without proportional return; the point is to refresh attention, not to re-explain the rules.
+**Rationale.** Counters cold-start blind spots and ensures the rulebook is at position 0 of context while attention is strongest. Implemented via the host's native always-on mechanism — Claude `@` imports in `.claude/CLAUDE.md`, Kiro `inclusion: always` steering in `.kiro/steering/nova.md`. No hook-level broadcast is required (and was removed on 2026-04-30 — see § Removed capabilities).
 
 ### C3 — Scoped rule activation
 
@@ -81,16 +73,25 @@ Each adapter's README fills this in for its platform.
 
 | Capability | Mechanism | Source file | Generated output |
 |------------|-----------|-------------|------------------|
-| C1. Session-start broadcast | *(platform-native session-start mechanism)* | `.ai/adapters/<platform>/...` | *(runtime path)* |
-| C2. Per-turn re-injection | *(platform-native per-turn hook)* | `.ai/adapters/<platform>/hooks/...` | *(runtime path)* |
+| C1. Session-start broadcast | *(platform-native always-on / session-start mechanism)* | `.ai/adapters/<platform>/...` | *(runtime path)* |
 | C3. Scoped rule activation | *(platform-native scope mechanism)* | *(generator or template)* | *(runtime path)* |
+| C4. User-skill surfacing | *(platform-native skill loader bridge)* | *(hook or URI reference)* | *(runtime path)* |
 | S1. Pre-edit gate | *(optional)* | | |
 | S2. Focused subagent | *(optional)* | | |
 
+## Removed capabilities
+
+### C2 — Per-turn re-injection (removed 2026-04-30)
+
+Was: "On every user prompt, a short checklist MUST be injected into context." Implemented via per-turn hooks that `cat` a shared `.ai/adapters/_shared/checklist.md` and emit task-pointer matches.
+
+Removed because empirical use showed the per-turn injection added cognitive load and felt like nagging without measurably reducing drift. The rules loaded by C1 at session start were sufficient. Both the checklist and task-pointer source files were deleted; per-turn hooks were either removed (Kiro) or stripped to C4-only mid-session refresh (Claude).
+
+If you want this back: restore `.ai/adapters/_shared/checklist.md` with terse content, restore the hook-level `cat` of that file in each adapter's per-turn hook, and re-add the C2 capability to this contract.
+
 ## Shared assets
 
-- `.ai/adapters/_shared/checklist.md` — the ≤5 line re-injection content. Both platforms' per-turn hooks `cat` this file. Single source of truth.
-- `_shared/` is not a platform directory — the adapters procedure MUST skip it when enumerating platforms.
+- `_shared/` holds cross-adapter content (e.g. `personal-knowledge-management.md`). The adapters procedure MUST skip it when enumerating platforms.
 
 ## No committed shell scripts under `.ai/`
 

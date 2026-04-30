@@ -32,7 +32,7 @@ Two or more entries under `.ai/workspace/learnings/` that describe the same rule
 A learning appears ≥3 times across sessions, or a drift-log entry repeats ≥3 times. That's a signal the knowledge belongs one tier up:
 - Repeat learnings in a single repo → propose moving to that repo's `AGENTS.md`.
 - Repeat across repos → propose moving to `.ai/workspace/AGENTS.md`.
-- Repeat drift patterns → propose strengthening the checklist (`.ai/adapters/_shared/checklist.md`), tightening a hook, or adding a new enforcement row to `.ai/enforcement.md`.
+- Repeat drift patterns → propose tightening a hook, strengthening a steering rule, or adding a new enforcement row to `.ai/enforcement.md`.
 
 ### 3. Demote stale knowledge
 

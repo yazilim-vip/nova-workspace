@@ -42,7 +42,7 @@ Each platform directory has three kinds of files:
 | `.ai/adapters/<platform>/*.md` (top-level) | Platform-specific rule sources of truth, referenced from steering/hooks. | No — stay in framework, referenced by path. |
 | `.ai/adapters/<platform>/*-snippet.json` | Settings fragments to merge into the platform's config. | Merged, not copied wholesale. |
 
-**`.ai/adapters/_shared/`** is not a platform directory — it holds content used by every adapter (e.g. `checklist.md` consumed by all per-turn hooks). The adapter procedure MUST skip `_shared/` when enumerating platforms.
+**`.ai/adapters/_shared/`** is not a platform directory — it holds cross-adapter content (e.g. `personal-knowledge-management.md`). The adapter procedure MUST skip `_shared/` when enumerating platforms.
 
 ## Supported platforms
 
@@ -110,7 +110,6 @@ More platforms get added as they're supported.
 9. **Report.** Tell the user what was generated, where, and how to test it:
    - Restart the agent.
    - Open a chat; confirm the agent references NOVA's files rather than repeating their contents.
-   - For per-turn hooks: ask the agent "was a NOVA checklist injected this turn?" — a yes confirms C2 is wired.
    - For scoped activation: open a file under `git-repositories/<any-repo>/`, ask "what are this repo's conventions?" — on Kiro the agent should answer without a prior tool call. **On Claude this requires the `repo-worker` subagent** (no auto-activation in the main agent — that's the price of not writing into cloned repos).
    - For subagents: ask "is a repo-worker subagent available?" — Claude should list it via `/agents` or its description. Invoke it with a bounded task in a named repo.
 

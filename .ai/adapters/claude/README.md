@@ -6,8 +6,8 @@ Implements `.ai/enforcement.md` for [Claude Code](https://code.claude.com). Gene
 
 | Capability | Mechanism | Source file | Generated output |
 |------------|-----------|-------------|------------------|
-| **C1** Session-start broadcast | `SessionStart` hook (matcher `startup\|resume\|clear`) prints `.ai/adapters/_shared/checklist.md`. **Currently empty** (subtraction pass 2026-04-30) — mechanism intact; refill the checklist file to re-enable. | `hooks/session-start.md` (bash code block extracted at install) | `.claude/hooks/session-start.sh` |
-| **C2** Per-turn re-injection | `UserPromptSubmit` hook prints the shared checklist + emits `task-pointers.md` matches. **Both currently silent** (subtraction pass 2026-04-30) — checklist + pointer patterns emptied; refill either file to re-enable. | `hooks/user-prompt-submit.md` (bash code block extracted at install) | `.claude/hooks/user-prompt-submit.sh` |
+| **C1** Session-start broadcast | `@` imports in `.claude/CLAUDE.md` load `AGENTS.md` + `.ai/workspace/AGENTS.md` transitively at session start. The `SessionStart` hook also fires (for C4 mirror only); it no longer prints anything. | `steering/CLAUDE.md` + `hooks/session-start.md` | `.claude/CLAUDE.md` + `.claude/hooks/session-start.sh` |
+| ~~C2~~ | Removed 2026-04-30. See `.ai/enforcement.md` § "Removed capabilities". | — | — |
 | **C3** Scoped rule activation | *Not implemented in the main agent.* Claude Code's only viable mechanism (a subdir `CLAUDE.md` shim) requires writing into someone else's git tree, which NOVA refuses to do. Delegated entirely to **S2** — the `repo-worker` subagent — whose system prompt makes "read the named repo's `AGENTS.md`" its first action. | — | — |
 | **C4** User-skill surfacing | Mirror inlined in the Claude session-start (and per-turn) hook bash. Source `.ai/workspace/skills/` → destination `.claude/skills/`. `rsync --delete` preferred, `cp -R` fallback. Claude's native skill loader then picks up workspace skills as if they were authored there. Hand-authored Claude-only skills must live at `~/.claude/skills/` (user-scoped) — `.claude/skills/` is exclusive to the mirror. | `hooks/session-start.md`, `hooks/user-prompt-submit.md` (sync logic inlined in each bash block) | `.claude/skills/<name>/SKILL.md` (mirrored on every session start + per-turn) |
 | **C5** PKM agent doctrine | **Disabled in Claude main agent (subtraction pass 2026-04-30).** Was `@`-imported into `steering/CLAUDE.md`; the import was dropped to reduce always-on token weight since PKM features fire only when the user invokes them. The doctrine file still exists; PKM-relevant work should read it on demand. Re-enable by adding `@../.ai/adapters/_shared/personal-knowledge-management.md` back to `steering/CLAUDE.md`. Kiro keeps the always-on import. | `.ai/adapters/_shared/personal-knowledge-management.md` | Read on demand |
@@ -35,7 +35,7 @@ Step 4 (per-repo `AGENTS.md`) is **NOT** auto-loaded in the main agent. The hist
 
 Hook **sources** are markdown (`hooks/<name>.md`) — each contains one fenced bash code block plus prose explaining purpose, runtime path, and mode. The adapters procedure extracts the bash block and writes the runtime `.sh` (gitignored). No `.sh` files are committed under `.ai/`. macOS / Linux only — Windows users pending.
 
-Both hooks `cat` the shared checklist (`.ai/adapters/_shared/checklist.md`). They add no Claude-specific rule text — the checklist is the single source of truth across all platforms. The C4 user-skill mirror logic is inlined in the bash block of each hook (deliberate duplication, two hook files only, bounded). If future Claude-only enforcement is needed, write a new hook source under `hooks/<name>.md` and register the runtime path in `settings-snippet.json`.
+Both hooks now exist solely for the **C4 user-skill mirror** — `cat`-ing the shared checklist was removed on 2026-04-30 (see `.ai/enforcement.md` § "Removed capabilities"). The mirror logic is inlined in the bash block of each hook (deliberate duplication, two hook files only, bounded). If future Claude-only enforcement is needed, write a new hook source under `hooks/<name>.md` and register the runtime path in `settings-snippet.json`.
 
 Exit codes:
 - `0` → stdout appended to Claude's context (success path — what we want).
@@ -48,7 +48,7 @@ Exit codes:
 
 - `autoMemoryDirectory` — redirects auto-memory into `.claude/memory/` (per-project, not per-user). Claude Code explicitly refuses this key from shared `.claude/settings.json` to prevent a shared repo from hijacking a teammate's memory path — that's why it lives in `settings.local.json`.
 - `hooks.SessionStart` (matcher `startup|resume|clear`) — fires `session-start.sh` for C1 + C4.
-- `hooks.UserPromptSubmit` — fires `user-prompt-submit.sh` for C2 + C4 + task-aware pointers.
+- `hooks.UserPromptSubmit` — fires `user-prompt-submit.sh` for C4 mid-session refresh only (C2 was removed 2026-04-30).
 - `hooks.PreToolUse` (matcher `Edit|Write|MultiEdit`) — fires `pre-edit-gate.sh` for S1.
 - `hooks.PostToolUse` (matcher `Read`) — fires `pre-edit-gate-tracker.sh` to clear S1 on AGENTS.md reads.
 

@@ -33,8 +33,9 @@ The `@` imports at the top auto-load `AGENTS.md` + `.ai/workspace/AGENTS.md`. Ev
 
 This adapter implements the `.ai/enforcement.md` contract:
 
-- **C1 — Session-start broadcast** via `SessionStart` hook that prints `.ai/adapters/_shared/checklist.md`.
-- **C2 — Per-turn re-injection** via `UserPromptSubmit` hook that prints the same checklist.
+- **C1 — Session-start broadcast** via the `@` imports above (`AGENTS.md` + `.ai/workspace/AGENTS.md`).
 - **C3 — Scoped rule activation** is **not implemented in the main agent** on Claude. Auto-load inside a cloned repo would require writing into someone else's git tree, which the adapter procedure refuses. C3 is delegated to **S2 — `repo-worker` subagent**: caller names the target repo at invocation, the subagent's system prompt reads that repo's `AGENTS.md` as its first action.
+- **C4 — User-skill surfacing** via `SessionStart` + `UserPromptSubmit` hooks that mirror `.ai/workspace/skills/` → `.claude/skills/` (the latter for mid-session refresh).
+- **C2 was removed 2026-04-30.** See `.ai/enforcement.md` § "Removed capabilities".
 
 See `.ai/adapters/claude/README.md` for the capability mapping table.

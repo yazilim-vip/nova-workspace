@@ -1,9 +1,8 @@
 # Hook: session-start (Claude)
 
-**Purpose.** Implements **C1** (session-start broadcast) and **C4** (user-skill surfacing) for Claude Code.
+**Purpose.** Implements **C4** (user-skill surfacing) for Claude Code. Mirrors `.ai/workspace/skills/` → `.claude/skills/` so Claude's native skill loader sees workspace user skills at trigger time. `rsync --delete` preferred; `cp -R` fallback. The destination is owned by the mirror — hand-authored Claude-only skills must live at `~/.claude/skills/`.
 
-1. Prints the shared re-injection checklist to STDOUT — Claude Code appends it to session context on `startup` / `resume` / `clear`.
-2. Mirrors `.ai/workspace/skills/` → `.claude/skills/` so Claude's native skill loader sees workspace user skills at trigger time. `rsync --delete` preferred; `cp -R` fallback. The destination is owned by the mirror — hand-authored Claude-only skills must live at `~/.claude/skills/`.
+C1 (session-start broadcast) is satisfied by the `@` imports in `.claude/CLAUDE.md` — no hook-level broadcast is needed. The previous shared-checklist printing was removed on 2026-04-30 (subtraction pass) along with the checklist file itself.
 
 **Runtime path.** `.claude/hooks/session-start.sh`
 
@@ -11,20 +10,15 @@
 
 **Generation.** This file is the source of truth. The adapters procedure (`.ai/adapters/SKILL.md` step 5) extracts the single fenced ` ```bash ``` ` block below, writes it to the runtime path, and `chmod +x`. Edit this file — never the runtime copy.
 
-**Failure mode.** Fail open. Any sub-step that errors must not block the session. Missing checklist or missing skills source → exit 0 silently.
+**Failure mode.** Fail open. Missing skills source → exit 0 silently.
 
 ```bash
 #!/usr/bin/env bash
 set -uo pipefail
 
 project_dir="${CLAUDE_PROJECT_DIR:-.}"
-checklist="${project_dir}/.ai/adapters/_shared/checklist.md"
 src_skills="${project_dir}/.ai/workspace/skills"
 dst_skills="${project_dir}/.claude/skills"
-
-if [[ -r "$checklist" ]]; then
-  cat "$checklist"
-fi
 
 if [[ -d "$src_skills" ]]; then
   mkdir -p "$dst_skills"
