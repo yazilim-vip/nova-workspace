@@ -6,26 +6,25 @@ Implements `.ai/enforcement.md` for [Claude Code](https://code.claude.com). Gene
 
 | Capability | Mechanism | Source file | Generated output |
 |------------|-----------|-------------|------------------|
-| **C1** Session-start broadcast | `SessionStart` hook (matcher `startup\|resume\|clear`) | `hooks/session-start.md` (bash code block extracted at install) | `.claude/hooks/session-start.sh` |
-| **C2** Per-turn re-injection | `UserPromptSubmit` hook | `hooks/user-prompt-submit.md` (bash code block extracted at install) | `.claude/hooks/user-prompt-submit.sh` |
+| **C1** Session-start broadcast | `SessionStart` hook (matcher `startup\|resume\|clear`) prints `.ai/adapters/_shared/checklist.md`. **Currently empty** (subtraction pass 2026-04-30) — mechanism intact; refill the checklist file to re-enable. | `hooks/session-start.md` (bash code block extracted at install) | `.claude/hooks/session-start.sh` |
+| **C2** Per-turn re-injection | `UserPromptSubmit` hook prints the shared checklist + emits `task-pointers.md` matches. **Both currently silent** (subtraction pass 2026-04-30) — checklist + pointer patterns emptied; refill either file to re-enable. | `hooks/user-prompt-submit.md` (bash code block extracted at install) | `.claude/hooks/user-prompt-submit.sh` |
 | **C3** Scoped rule activation | *Not implemented in the main agent.* Claude Code's only viable mechanism (a subdir `CLAUDE.md` shim) requires writing into someone else's git tree, which NOVA refuses to do. Delegated entirely to **S2** — the `repo-worker` subagent — whose system prompt makes "read the named repo's `AGENTS.md`" its first action. | — | — |
 | **C4** User-skill surfacing | Mirror inlined in the Claude session-start (and per-turn) hook bash. Source `.ai/workspace/skills/` → destination `.claude/skills/`. `rsync --delete` preferred, `cp -R` fallback. Claude's native skill loader then picks up workspace skills as if they were authored there. Hand-authored Claude-only skills must live at `~/.claude/skills/` (user-scoped) — `.claude/skills/` is exclusive to the mirror. | `hooks/session-start.md`, `hooks/user-prompt-submit.md` (sync logic inlined in each bash block) | `.claude/skills/<name>/SKILL.md` (mirrored on every session start + per-turn) |
-| **C5** PKM agent doctrine | `@`-imported always-on rules: trigger recognition for capture verbs ("capture to inbox", "log to daily", etc.), required first read of the contract on any PKM trigger, viewer-detection (`notes/.obsidian/`) for the every-note-is-a-folder-note override, path discipline, safety guards (vault is gitignored, never proactive). Always-on because triggers fire from cold sessions before any vault declaration exists. | `.ai/adapters/_shared/personal-knowledge-management.md` (shared with Kiro) | Imported by `steering/CLAUDE.md` → `.claude/CLAUDE.md` |
+| **C5** PKM agent doctrine | **Disabled in Claude main agent (subtraction pass 2026-04-30).** Was `@`-imported into `steering/CLAUDE.md`; the import was dropped to reduce always-on token weight since PKM features fire only when the user invokes them. The doctrine file still exists; PKM-relevant work should read it on demand. Re-enable by adding `@../.ai/adapters/_shared/personal-knowledge-management.md` back to `steering/CLAUDE.md`. Kiro keeps the always-on import. | `.ai/adapters/_shared/personal-knowledge-management.md` | Read on demand |
 | **Skills** | See **C4** above — workspace user skills are mirrored from `.ai/workspace/skills/` into `.claude/skills/` so the native loader sees them. Framework `nova-*` skills do **not** land in `.claude/skills/`; they stay at `.ai/<name>/SKILL.md` and load via the AGENTS.md "Framework Skills" table reference. Hand-authored Claude-only skills go at `~/.claude/skills/` (user-scoped) — `.claude/skills/` is owned by the C4 mirror. | `.ai/workspace/skills/<name>/SKILL.md` (source) | `.claude/skills/<name>/SKILL.md` (mirrored) |
 | **S1** Pre-edit gate | `PreToolUse` hook matching `Edit\|Write\|MultiEdit` returns exit 2 to block writes under `git-repositories/<repo>/` until that repo's `AGENTS.md` was read this session. Companion `PostToolUse` hook on `Read` drops a session marker on AGENTS.md reads. **Default-ON** (Kiro keeps it opt-in; Claude has reliable session id and gentler escape hatches). | `hooks/pre-edit-gate.md` + `hooks/pre-edit-gate-tracker.md` | `.claude/hooks/pre-edit-gate.sh` + `.claude/hooks/pre-edit-gate-tracker.sh` |
 | **S2** Focused subagent | Native Claude Code subagent (auto-delegated or invoked explicitly) | `agents/repo-worker.md` | `.claude/agents/repo-worker.md` |
 
 ## How the pointer chain works
 
-`.claude/CLAUDE.md` is Claude Code's native entry point. Our generated copy contains three `@` imports that Claude Code expands transitively into context at session start:
+`.claude/CLAUDE.md` is Claude Code's native entry point. Our generated copy contains two `@` imports that Claude Code expands transitively into context at session start:
 
 ```
 @../AGENTS.md
 @../.ai/workspace/AGENTS.md
-@../.ai/workspace/map/repos.md
 ```
 
-This handles Navigation Protocol steps 1–3 automatically.
+This handles framework defaults + workspace identity automatically. The repository map (`.ai/workspace/map/repos.md`) and PKM doctrine were previously auto-loaded too — both were dropped on 2026-04-30 to reduce always-on token weight; the agent reads them on demand when the task calls for them.
 
 Step 4 (per-repo `AGENTS.md`) is **NOT** auto-loaded in the main agent. The historical mechanism — a subdir `CLAUDE.md` shim under `git-repositories/<repo>/` — was removed because it forced every cloned repo to either gitignore the generated path or live with persistent untracked-file noise, and we don't want the adapters procedure writing inside someone else's git tree at all. Per-repo activation is handled in two ways instead:
 
