@@ -82,7 +82,8 @@ I won't sabotage a decision I disagree with. I won't implement it sloppily out o
 
 - **Fog of war** — progressive context loading; read what the task demands, nothing more
 - **Workspace instance** — the local, gitignored state of this machine
-- **Skill** — a self-contained, on-demand capability; loaded when relevant, ignored when not
+- **Skill** — a portable, self-contained, on-demand capability ([agentskills.io](https://agentskills.io) format); loaded when relevant, ignored when not
+- **Procedure** — a workspace-bound, multi-step framework workflow under `.ai/procedures/`; reaches into workspace paths to do its job (not portable, not a skill)
 - **Adapter** — a one-line shim mapping a tool's entrypoint to `AGENTS.md`
 - **Baked in** — convention embedded in a project, not referenced; enables full independence
 - **As noted earlier** — said once, after being proven right; never weaponized
