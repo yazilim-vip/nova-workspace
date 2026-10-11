@@ -6,18 +6,18 @@ Implements `.ai/enforcement.md` for [Claude Code](https://code.claude.com). Gene
 
 | Capability | Mechanism | Source file | Generated output |
 |------------|-----------|-------------|------------------|
-| **C1** Session-start broadcast | `@` imports in `.claude/CLAUDE.md` load `AGENTS.md` + `.ai/workspace/AGENTS.md` transitively at session start. The `SessionStart` hook also fires (for C4 mirror only); it no longer prints anything. | `steering/CLAUDE.md` + `hooks/session-start.md` | `.claude/CLAUDE.md` + `.claude/hooks/session-start.sh` |
+| **C1** Session-start broadcast | `@` imports in `.claude/AGENTS.md` load `AGENTS.md` + `.ai/workspace/AGENTS.md` transitively at session start. The `SessionStart` hook also fires (for C4 mirror only); it no longer prints anything. | `steering/AGENTS.md` + `hooks/session-start.md` | `.claude/AGENTS.md` + `.claude/hooks/session-start.sh` |
 | ~~C2~~ | Removed 2026-04-30. See `.ai/enforcement.md` § "Removed capabilities". | — | — |
-| **C3** Scoped rule activation | *Not implemented in the main agent.* Claude Code's only viable mechanism (a subdir `CLAUDE.md` shim) requires writing into someone else's git tree, which NOVA refuses to do. Delegated entirely to **S2** — the `repo-worker` subagent — whose system prompt makes "read the named repo's `AGENTS.md`" its first action. | — | — |
+| **C3** Scoped rule activation | *Not implemented in the main agent.* Claude Code's only viable mechanism (a subdir `AGENTS.md` shim) requires writing into someone else's git tree, which NOVA refuses to do. Delegated entirely to **S2** — the `repo-worker` subagent — whose system prompt makes "read the named repo's `AGENTS.md`" its first action. | — | — |
 | **C4** User-skill surfacing | Mirror inlined in the Claude session-start (and per-turn) hook bash. Source `.ai/workspace/skills/` → destination `.claude/skills/`. `rsync --delete` preferred, `cp -R` fallback. Claude's native skill loader then picks up workspace skills as if they were authored there. Hand-authored Claude-only skills must live at `~/.claude/skills/` (user-scoped) — `.claude/skills/` is exclusive to the mirror. | `hooks/session-start.md`, `hooks/user-prompt-submit.md` (sync logic inlined in each bash block) | `.claude/skills/<name>/SKILL.md` (mirrored on every session start + per-turn) |
-| **C5** PKM agent doctrine | **Disabled in Claude main agent (subtraction pass 2026-04-30).** Was `@`-imported into `steering/CLAUDE.md`; the import was dropped to reduce always-on token weight since PKM features fire only when the user invokes them. The doctrine file still exists; PKM-relevant work should read it on demand. Re-enable by adding `@../.ai/procedures/adapters/_shared/personal-knowledge-management.md` back to `steering/CLAUDE.md`. Kiro keeps the always-on import. | `.ai/procedures/adapters/_shared/personal-knowledge-management.md` | Read on demand |
+| **C5** PKM agent doctrine | **Disabled in Claude main agent (subtraction pass 2026-04-30).** Was `@`-imported into `steering/AGENTS.md`; the import was dropped to reduce always-on token weight since PKM features fire only when the user invokes them. The doctrine file still exists; PKM-relevant work should read it on demand. Re-enable by adding `@../.ai/procedures/adapters/_shared/personal-knowledge-management.md` back to `steering/AGENTS.md`. Kiro keeps the always-on import. | `.ai/procedures/adapters/_shared/personal-knowledge-management.md` | Read on demand |
 | **Skills** | See **C4** above — workspace user skills are mirrored from `.ai/workspace/skills/` into `.claude/skills/` so the native loader sees them. Framework `nova-*` skills do **not** land in `.claude/skills/`; they stay at `.ai/procedures/<name>/PROCEDURE.md` and load via the AGENTS.md "Framework Procedures" table reference. Hand-authored Claude-only skills go at `~/.claude/skills/` (user-scoped) — `.claude/skills/` is owned by the C4 mirror. | `.ai/workspace/skills/<name>/SKILL.md` (source) | `.claude/skills/<name>/SKILL.md` (mirrored) |
 | **S1** Pre-edit gate | `PreToolUse` hook matching `Edit\|Write\|MultiEdit` returns exit 2 to block writes under `git-repositories/<repo>/` until that repo's `AGENTS.md` was read this session. Companion `PostToolUse` hook on `Read` drops a session marker on AGENTS.md reads. **Default-ON** (Kiro keeps it opt-in; Claude has reliable session id and gentler escape hatches). | `hooks/pre-edit-gate.md` + `hooks/pre-edit-gate-tracker.md` | `.claude/hooks/pre-edit-gate.sh` + `.claude/hooks/pre-edit-gate-tracker.sh` |
 | **S2** Focused subagent | Native Claude Code subagent (auto-delegated or invoked explicitly) | `agents/repo-worker.md` | `.claude/agents/repo-worker.md` |
 
 ## How the pointer chain works
 
-`.claude/CLAUDE.md` is Claude Code's native entry point. Our generated copy contains two `@` imports that Claude Code expands transitively into context at session start:
+`.claude/AGENTS.md` is Claude Code's native entry point. Our generated copy contains two `@` imports that Claude Code expands transitively into context at session start:
 
 ```
 @../AGENTS.md
@@ -26,7 +26,7 @@ Implements `.ai/enforcement.md` for [Claude Code](https://code.claude.com). Gene
 
 This handles framework defaults + workspace identity automatically. The repository map (`.ai/workspace/map/repos.md`) and PKM doctrine were previously auto-loaded too — both were dropped on 2026-04-30 to reduce always-on token weight; the agent reads them on demand when the task calls for them.
 
-Step 4 (per-repo `AGENTS.md`) is **NOT** auto-loaded in the main agent. The historical mechanism — a subdir `CLAUDE.md` shim under `git-repositories/<repo>/` — was removed because it forced every cloned repo to either gitignore the generated path or live with persistent untracked-file noise, and we don't want the adapters procedure writing inside someone else's git tree at all. Per-repo activation is handled in two ways instead:
+Step 4 (per-repo `AGENTS.md`) is **NOT** auto-loaded in the main agent. The historical mechanism — a subdir `AGENTS.md` shim under `git-repositories/<repo>/` — was removed because it forced every cloned repo to either gitignore the generated path or live with persistent untracked-file noise, and we don't want the adapters procedure writing inside someone else's git tree at all. Per-repo activation is handled in two ways instead:
 
 - **`repo-worker` subagent (S2)** — fresh context, target repo named at invocation, system prompt makes "read this repo's `AGENTS.md`" its first action. Use this whenever a task is bounded to one repo.
 - **Manual Navigation Protocol step 4** — when staying in the main agent for an ad-hoc task in a repo, the agent reads that repo's `AGENTS.md` explicitly via the Navigation Protocol.
@@ -68,7 +68,7 @@ Generic archetype for tasks scoped to one repo under `git-repositories/`. It:
 
 - Pre-loads framework + workspace + repo-map via `@../../AGENTS.md`, `@../../.ai/workspace/AGENTS.md`, `@../../.ai/workspace/map/repos.md` (paths resolve from the runtime location `.claude/agents/repo-worker.md`).
 - Runs in a fresh context window — zero rot.
-- System prompt instructs it to read the target repo's own `AGENTS.md` as its first action. Since NOVA no longer ships subdir `CLAUDE.md` shims, this is the canonical C3 mechanism on Claude — there is no fallback path inside the cloned repo's tree.
+- System prompt instructs it to read the target repo's own `AGENTS.md` as its first action. Since NOVA no longer ships subdir `AGENTS.md` shims, this is the canonical C3 mechanism on Claude — there is no fallback path inside the cloned repo's tree.
 
 **When to invoke.** When main context is getting long, when a task is bounded to one repo, or explicitly: *"Use repo-worker to <task> in <repo>"*. Claude auto-delegates based on the subagent's description; manual invocation via `/agents` also works.
 
@@ -114,7 +114,7 @@ Shortcut that appends a one-line entry to `.ai/workspace/learnings/drift-log.md`
 
 Run the adapters procedure (`.ai/procedures/adapters/PROCEDURE.md`). It:
 
-1. Copies `steering/CLAUDE.md` → `.claude/CLAUDE.md`.
+1. Copies `steering/AGENTS.md` → `.claude/AGENTS.md`.
 2. For each `hooks/<name>.md`, extracts its bash code block to `.claude/hooks/<name>.sh` and `chmod +x`.
 3. Copies `agents/*.md` → `.claude/agents/`.
 4. Merges `settings-snippet.json` into `.claude/settings.local.json` surgically.

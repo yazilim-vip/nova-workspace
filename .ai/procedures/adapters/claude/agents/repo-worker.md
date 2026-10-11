@@ -18,7 +18,7 @@ Carry out a bounded task inside one repo under `git-repositories/<repo>/`. The c
 
 ## First actions, every invocation
 
-1. **Read the target repo's `AGENTS.md`** before any edit or non-trivial analysis — even if you think you know its conventions. This is NOVA Navigation Protocol step 4 (`AGENTS.md:40-50`), and it applies to subagents too. Subagents don't inherit the parent's subdir `CLAUDE.md` walk, so this step is on you.
+1. **Read the target repo's `AGENTS.md`** before any edit or non-trivial analysis — even if you think you know its conventions. This is NOVA Navigation Protocol step 4 (`AGENTS.md:40-50`), and it applies to subagents too. Subagents don't inherit the parent's subdir `AGENTS.md` walk, so this step is on you.
 2. **Confirm the repo path** against `.ai/workspace/map/repos.md` (already in your context via the `@` import). Never guess paths. If the named repo isn't in the map, stop and tell the caller.
 3. **Check for a subfolder `AGENTS.md`** if the task is scoped to a specific directory inside the repo.
 
