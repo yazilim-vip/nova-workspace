@@ -80,7 +80,7 @@ Each AI tool has its own entrypoint filename. Adapters are thin files (1-2 lines
 
 | Tool | File | Commit? |
 |------|------|---------|
-| Claude Code | `CLAUDE.md` | Yes — primary tool, needed at clone time |
+| Claude Code | `AGENTS.md` | Yes — primary tool, needed at clone time |
 | Kiro | `.kiro/steering/workspace.md` | No — local only, gitignored |
 | Cursor | `.cursor/rules/workspace.mdc` | No — local only, gitignored |
 | GitHub Copilot | `.github/copilot-instructions.md` | No — local only, gitignored |

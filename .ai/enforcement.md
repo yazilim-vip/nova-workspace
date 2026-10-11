@@ -27,7 +27,7 @@ On session start (or its platform equivalent), the agent's context MUST include:
 - The framework rulebook (`AGENTS.md` and `.ai/workspace/AGENTS.md` content).
 - A pointer to any platform-specific strict rules (e.g. Kiro's `terminal.md`).
 
-**Rationale.** Counters cold-start blind spots and ensures the rulebook is at position 0 of context while attention is strongest. Implemented via the host's native always-on mechanism — Claude `@` imports in `.claude/CLAUDE.md`, Kiro `inclusion: always` steering in `.kiro/steering/nova.md`. No hook-level broadcast is required (and was removed on 2026-04-30 — see § Removed capabilities).
+**Rationale.** Counters cold-start blind spots and ensures the rulebook is at position 0 of context while attention is strongest. Implemented via the host's native always-on mechanism — Claude `@` imports in `.claude/AGENTS.md`, Kiro `inclusion: always` steering in `.kiro/steering/nova.md`. No hook-level broadcast is required (and was removed on 2026-04-30 — see § Removed capabilities).
 
 ### C3 — Scoped rule activation
 

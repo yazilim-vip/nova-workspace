@@ -13,7 +13,7 @@ Each agent has its own rules/memory/steering/hook convention, and none of them r
 
 **The enforcement contract lives at `.ai/enforcement.md`.** Four MUST capabilities (session-start broadcast, per-turn re-injection, scoped activation, user-skill surfacing) and two SHOULD capabilities (pre-edit gate, focused subagent). Every adapter's README maps the contract to its platform-native mechanism. Read the contract before editing an adapter.
 
-Note: **Claude Code does not natively read `AGENTS.md`** (only `CLAUDE.md`). A committed root `CLAUDE.md` with the plain text "read AGENTS.md" is a text instruction, not enforcement. The Claude adapter strengthens this by generating a `.claude/CLAUDE.md` that uses Claude's native `@path` import syntax to load `AGENTS.md` (plus workspace `AGENTS.md` and `repos.md`) into context at session start — transitive `@` expansion, same mechanism as any `CLAUDE.md`.
+Note: **Claude Code reads `AGENTS.md` natively.** The Claude adapter strengthens this by generating a `.claude/AGENTS.md` that uses Claude's native `@path` import syntax to load `AGENTS.md` (plus workspace `AGENTS.md` and `repos.md`) into context at session start — transitive `@` expansion, same mechanism as any `AGENTS.md`.
 
 ## Core principle — **STRICT**
 
@@ -48,7 +48,7 @@ Each platform directory has three kinds of files:
 
 | Platform | Adapter dir | Output dir | Enforcement primitives used |
 |----------|-------------|-----------|-----------------------------|
-| Claude Code | `.ai/procedures/adapters/claude/` | `.claude/` | `@path` imports + `SessionStart` / `UserPromptSubmit` hooks + subdir `CLAUDE.md` shims |
+| Claude Code | `.ai/procedures/adapters/claude/` | `.claude/` | `@path` imports + `SessionStart` / `UserPromptSubmit` hooks + subdir `AGENTS.md` shims |
 | Kiro | `.ai/procedures/adapters/kiro/` | `.kiro/` | `inclusion: always/fileMatch` steering + `#[[file:]]` live refs + `promptSubmit` hook |
 
 ### Kiro — terminal hazards
@@ -101,7 +101,7 @@ More platforms get added as they're supported.
    - Example: Claude → merge `.ai/procedures/adapters/claude/settings-snippet.json` into `.claude/settings.local.json`.
    - Prefer a dry-run diff output to the user before applying if ambiguity exists.
 7. **Generate per-repo artifacts (C3 — scoped rule activation), platform permitting.** For each cloned repo under `git-repositories/` that also appears in `.ai/workspace/map/repos.md`:
-   - **Claude:** *no per-repo file is written.* Claude Code's only auto-load mechanism inside a repo would be a subdir `CLAUDE.md` shim, but writing into someone else's git-tracked tree creates persistent untracked-file noise and forces every cloned repo to gitignore the generated path. NOVA explicitly does NOT do that. C3 is delegated on Claude to **S2 — the `repo-worker` subagent** (a fresh-context agent the caller invokes with the target repo name; its system prompt makes "read this repo's `AGENTS.md`" its first action). For ad-hoc sessions in the main agent, the Navigation Protocol step 4 ("Enter the project — read its `AGENTS.md`") is followed manually.
+   - **Claude:** *no per-repo file is written.* Claude Code's only auto-load mechanism inside a repo would be a subdir `AGENTS.md` shim, but writing into someone else's git-tracked tree creates persistent untracked-file noise and forces every cloned repo to gitignore the generated path. NOVA explicitly does NOT do that. C3 is delegated on Claude to **S2 — the `repo-worker` subagent** (a fresh-context agent the caller invokes with the target repo name; its system prompt makes "read this repo's `AGENTS.md`" its first action). For ad-hoc sessions in the main agent, the Navigation Protocol step 4 ("Enter the project — read its `AGENTS.md`") is followed manually.
    - **Kiro:** render `.ai/procedures/adapters/kiro/templates/repo-steering.md` → `.kiro/steering/<slug>.md` where `<slug>` is the repo's path with `/` replaced by `-`. Kiro's `inclusion: fileMatch` mechanism is workspace-scoped (lives entirely under `.kiro/`) and never touches `git-repositories/<repo>/`, so it's safe.
    - Skip repos in `repos.md` that aren't cloned. Warn on repos that are cloned but missing from `repos.md`.
    - Idempotency: if the target file already exists and matches the template, do nothing. If it differs (user edited), show the diff and confirm before overwriting.

@@ -2,7 +2,7 @@
 
 **Purpose.** Implements **C4** (user-skill surfacing) for Claude Code. Mirrors `.ai/workspace/skills/` → `.claude/skills/` so Claude's native skill loader sees workspace user skills at trigger time. `rsync --delete` preferred; `cp -R` fallback. The destination is owned by the mirror — hand-authored Claude-only skills must live at `~/.claude/skills/`.
 
-C1 (session-start broadcast) is satisfied by the `@` imports in `.claude/CLAUDE.md` — no hook-level broadcast is needed. The previous shared-checklist printing was removed on 2026-04-30 (subtraction pass) along with the checklist file itself.
+C1 (session-start broadcast) is satisfied by the `@` imports in `.claude/AGENTS.md` — no hook-level broadcast is needed. The previous shared-checklist printing was removed on 2026-04-30 (subtraction pass) along with the checklist file itself.
 
 **Runtime path.** `.claude/hooks/session-start.sh`
 
